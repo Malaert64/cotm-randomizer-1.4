@@ -1,4 +1,4 @@
-# Castlevania: Circle of the Moon Randomizer 1.2
+# Castlevania: Circle of the Moon Randomizer 1.3
 
 Reverse engineering and game program: DevAnj
 Optional patches: fusecavator
@@ -114,6 +114,70 @@ Steam guide article: https://steamcommunity.com/sharedfiles/filedetails/?id=2612
 16. "DSS Run Speed": The Pluto and Griffin DSS card speed increase will apply even when jumping.
 17. "Skip Cutscenes": Cutscenes will proceed without dialogue.
 18. "Skip Magic Item Tutorials": Magic Items will no longer provide guidance on item use when obtained.
+19. "Nerf Roc Wing": Roc Wing will be less effective while Double or Kick Boots have not yet been obtained. Read the guide below for details.
+
+# "Nerf Roc Wing" guide:
+
+The optional patch "Nerf Roc Wing" by Liquid Cat changes the way the Roc Wing behaves. The Roc Wing's height will be decreased if Double and/or Kick Boots are not yet obtained according to this list:
+
+Jump Lv. 5 = Roc Wing + Kick Boots + Double
+Jump Lv. 4 = Roc Wing + Kick Boots
+Jump Lv. 3 = Roc Wing + Double (alternatively solvable with Kick Boots instead of Double)
+Jump Lv. 2 = Roc Wing
+Jump Lv. 1 = Double (alternatively solvable with just Roc Wing)
+Jump Lv. 0 = Nothing
+
+Without Double and Kick Boots, the Roc Wing jump height is nerfed, and you can only jump from the ground.
+With Double and no Kick Boots, the Roc Wing jump height is nerfed, but you can jump once from midair (and it will count as your double jump).
+Without Double but with Kick Boots, the Roc Wing jump height is normal, but you can only jump from the ground.
+With Double and Kick Boots, the Roc Wing jump behaves as it does normally in vanilla (i.e., midair jumps and infinite jumps while still in the air).
+
+Very importantly, the heights in logic take into account that you will jump SLIGHTLY HIGHER while holding the A button during a Roc Wing jump. If you cannot make a jump that is included in the list of locations below with the correct jump level, try holding the A button during the jump.
+
+Liquid Cat also provided this additional explanation of which areas and rooms are affected:
+
+OTHER NOTES:
+-Escaping the catacombs and reaching Audience Room can be done with Jump Lv. 1 at minimum. As such, anything beyond the Catacombs doable with just Jump Lv. 1 doesn't have it listed there, as being there with Jump Lv. 0 is impossible.
+-Going from Audience Room to top of Machine Tower is doable with Jump Lv. 2 or Kick Boots + Jump Lv. 1.
+-Reaching Eternal Corridor and Chapel Tower can be done Jump Lv. 3. Making it with Jump Lv. 2 is possible with Freeze or upper Underground Gallery access. And of course, Jump Lv. 1 can only make it with Kick Boots.
+-Observation Tower is ONLY reachable with Jump Lv. 5, the highest jump level of them all.
+-Room CT14 (the room in Chapel Tower just after the Thunder Demons) is notably impossible to get past if you make it there with just Jump Lv. 2; to get up the shaft, at minimum you need either Jump Lv. 3 or Kick Boots.
+-You need Jump Lv. 3 at minimum to both enter Waterway from Corridor and escape. Making it with Lv. 2 is a softlock, but getting there with Lv. 2 should be impossible to begin with.
+-If you end up outside the Battle Arena without Jump Lv. 5, it's not a softlock; you can escape after doing the first three Arena rounds.
+
+LOCATIONS:
+-SR3   - Sealed Room: Main shaft left fake wall: Jump Lv. 5
+-CC3   - Catacomb: Fleamen brain room - Lower: Jump Lv. 1
+-CC3b  - Catacomb: Fleamen brain room - Upper: Jump Lv. 3 OR Jump Lv. 1 + Freeze
+-CC8b  - Catacomb: Earth Demon bone pit - Upper: Jump Lv. 3 OR Kick
+-CC14b - Catacomb: Muddy Mudman platforms room - Upper:Jump Lv. 1 OR Kick
+-CC25  - Catacomb: Mummies' fake wall:Jump Lv. 1
+-AS4   - Abyss Staircase: Roc ledge:Jump Lv. 4
+-AR14b - Audience Room: Wicked roc chamber - Upper:Jump Lv. 4
+-AR17b - Audience Room: Right exterior - Upper:Jump Lv. 2 OR Kick
+-AR19  - Audience Room: 100 meter skelly dash hallway:Jump Lv. 2 OR Kick
+-AR26  - Audience Room: Below Machine Tower roc ledge:Jump Lv. 5
+-AR30  - Audience Room: Roc horse jaguar armory - Left:Jump Lv. 4 OR Jump Lv. 3 + Freeze
+-AR30b - Audience Room: Roc horse jaguar armory - Right:Jump Lv. 4 OR Jump Lv. 3 + Freeze
+-OW0   - Outer Wall: Left roc ledge:Jump Lv. 4
+-OW1   - Outer Wall: Right-brained ledge:Jump Lv. 5 OR Freeze
+-TH3   - Triumph Hallway: Entrance Flame Armor climb:Jump Lv. 2 OR Kick + Freeze
+-MT3   - Machine Tower: Boneheaded argument wall kicks room:Jump Lv. 2 OR Kick
+-MT6   - Machine Tower: Skelly-rang wall kicks room:Jump Lv. 2 OR Kick
+-CT1   - Chapel Tower: Flame Armor climb room:Jump Lv. 2 OR Freeze
+-CT13  - Chapel Tower: Sharp mind climb room:Jump Lv. 2 OR Freeze
+-CT26  - Chapel Tower: Outside Battle Arena - UpperJump Lv. 4 OR Jump Lv. 3 + Freeze
+-CT26b - Chapel Tower: Outside Battle Arena - LowerJump Lv. 4 OR Jump Lv. 3 + Freeze
+-UG3   - Underground Gallery: Harpy climb room - Lower:Jump Lv. 2 OR Freeze
+-UG3B  - Underground Gallery: Harpy climb room - Upper:Jump Lv. 4 OR Freeze
+-UW10  - Underground Warehouse: Succubus shaft roc ledge:Jump Lv. 5 OR Jump Lv. 4 + Freeze
+-UW14  - Underground Warehouse: Optional puzzle ceiling fake wall:Jump Lv. 2 OR Freeze
+-UW16B - Underground Warehouse: Holy fox hideout - Right roc ledge:     Jump Lv. 3 OR Jump Lv. 2 + Freeze
+-UY5   - Underground Waterway: Brain freeze room:Jump Lv. 3 OR Freeze
+-UY8   - Underground Waterway: Roc fake ceiling:Jump Lv. 2
+-UY13  - Underground Waterway: Roc exit shaft:Jump Lv. 3
+-UY18  - Underground Waterway: Roc exit shaft fake wall:Jump Lv. 3
+-CR1   - Ceremonial Room: Fake floor:Jump Lv. 2 OR Kick
 
 # Patches:
 
@@ -234,7 +298,17 @@ Optional patch created by Liquid Cat. The text printed during cutscenes will not
 SkipMagicItemTutorials.ips
 Optional patch created by Liquid Cat. The text printed after Magic Items are obtained will not appear.
 
+DropRework.ips
+Patch created by Fusecavator. Makes changes to dropped item graphics to avoid garbled Magic Items and allow displaying arbitrary items.
+
+NerfRocWing.ips
+Optional patch created by Liquid Cat. Changes the behavior of the Roc Wing depending on which other Magic Items have been obtained.
+
 # Changes:
+
+1.3:
+  - Added a patch by Fusecavator to fix the garbled Magic Item issue.
+  - Added an optional patch by Liquid Cat and randomizer logic changes to support the nerfed Roc Wing optional rule.
 
 1.2:
   - Added an optional patch by Liquid Cat to apply the Pluto/Griffin speed increase while jumping.

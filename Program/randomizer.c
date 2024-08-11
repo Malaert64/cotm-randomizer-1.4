@@ -4,7 +4,7 @@
 #include "spoilertranslator.h"
 
 // Internal functions
-static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOrStone, bool ignoreCleansing, bool ironMaiden, int last_keys_count);
+static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOrStone, bool ignoreCleansing, bool ironMaiden, int last_keys_count, bool nerfRocWing);
 static bool populateKeyItem(int reachable[], int item_assignment[], int keyItems[], bool dssCards[], bool hasIceOrStone, int last_keys_count, struct seed_options *options);
 static void populateItems(int reachable[], int item_assignment[], bool dssCards[], struct seed_options *options);
 static int getRandomValidPedestal(int reachable[], int item_assignment[]);
@@ -79,7 +79,7 @@ void generateRandomizerPatch(FILE* randomizer_patch, unsigned int randomizer_see
            !keyItems[INDEX_KEYITEM_CLEANSING] || !keyItems[INDEX_KEYITEM_ROCWING] || (keyItems[INDEX_KEYITEM_LASTKEY] < last_keys_count) || !hasIceOrStone)
     {
         // Mark all rooms reachable that we can reach with current key items
-        findAllItemsReachable(reachable, keyItems, hasIceOrStone, options->ignoreCleansing, ironMaiden, last_keys_count);
+        findAllItemsReachable(reachable, keyItems, hasIceOrStone, options->ignoreCleansing, ironMaiden, last_keys_count, options->nerfRocWing);
 
         // Select a random room from those rooms that are now reachable that does not contain a key item to place a key item
         // or a DSS card combo allowing ice or stone
@@ -87,7 +87,7 @@ void generateRandomizerPatch(FILE* randomizer_patch, unsigned int randomizer_see
     }
 
     // Assert that all rooms are now reachable (minus Battle Arena, which we disregard)
-    findAllItemsReachable(reachable, keyItems, hasIceOrStone, options->ignoreCleansing, ironMaiden, last_keys_count);
+    findAllItemsReachable(reachable, keyItems, hasIceOrStone, options->ignoreCleansing, ironMaiden, last_keys_count, options->nerfRocWing);
     for (i = 0; i < NUMBER_PEDESTALS; i++)
     {
         if (reachable[i] == UNREACHABLE)
@@ -109,7 +109,7 @@ void generateRandomizerPatch(FILE* randomizer_patch, unsigned int randomizer_see
     return;
 }
 
-static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOrStone, bool ignoreCleansing, bool ironMaiden, int last_keys_count)
+static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOrStone, bool ignoreCleansing, bool ironMaiden, int last_keys_count, bool nerfRocWing)
 {
     // Assume switch is in original location accessible with Double and Kick Boots and set to true if it is false and those are obtained
     // unless the optional rule breaking them without pressing the button has been enabled
@@ -117,8 +117,46 @@ static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOr
     {
         ironMaiden = keyItems[INDEX_KEYITEM_DOUBLE] && keyItems[INDEX_KEYITEM_KICKBOOTS];
     }
+
     bool rocOrDouble = keyItems[INDEX_KEYITEM_DOUBLE] || keyItems[INDEX_KEYITEM_ROCWING];
     bool rocOrKickBoots = keyItems[INDEX_KEYITEM_KICKBOOTS] || keyItems[INDEX_KEYITEM_ROCWING];
+
+    // Jump power notes from Liquid Cat:
+    // Jump Lv. 5 = Roc Wing + Kick Boots + Double
+    // Jump Lv. 4 = Roc Wing + Kick Boots
+    // Jump Lv. 3 = Roc Wing + Double (alternatively solvable with Kick Boots instead of Double)
+    // Jump Lv. 2 = Roc Wing
+    // Jump Lv. 1 = Double (alternatively solvable with just Roc Wing)
+    // Jump Lv. 0 = Nothing
+    //
+    int jumpLevel = 0;
+
+    if (nerfRocWing)
+    {
+        if (keyItems[INDEX_KEYITEM_DOUBLE])
+            jumpLevel = 1;
+
+        if (keyItems[INDEX_KEYITEM_ROCWING])
+            jumpLevel = 2;
+
+        if (keyItems[INDEX_KEYITEM_DOUBLE] && keyItems[INDEX_KEYITEM_ROCWING])
+            jumpLevel = 3;
+
+        if (keyItems[INDEX_KEYITEM_KICKBOOTS] && keyItems[INDEX_KEYITEM_ROCWING])
+            jumpLevel = 4;
+
+        if (keyItems[INDEX_KEYITEM_DOUBLE] && keyItems[INDEX_KEYITEM_KICKBOOTS] && keyItems[INDEX_KEYITEM_ROCWING])
+            jumpLevel = 5;
+    }
+    else
+    {
+        if (keyItems[INDEX_KEYITEM_DOUBLE])
+            jumpLevel = 1;
+
+        if (keyItems[INDEX_KEYITEM_ROCWING])
+            jumpLevel = 5;
+    }
+
 
     // No requirements
     reachable[INDEX_CATACOMB4]++;
@@ -161,7 +199,10 @@ static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOr
     // Kick Boots
     if (rocOrKickBoots)
     {
-        reachable[INDEX_CATACOMB8B]++;
+        if (!nerfRocWing || jumpLevel >= 3)
+        {
+            reachable[INDEX_CATACOMB8B]++;
+        }
     }
 
     // Heavy Ring
@@ -170,32 +211,55 @@ static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOr
         reachable[INDEX_CATACOMB1]++;
     }
 
+
+
     // Roc Wing
     if (keyItems[INDEX_KEYITEM_ROCWING])
     {
-        reachable[INDEX_SEALED_ROOM3]++;
-        reachable[INDEX_ABYSS_STAIRWAY4]++;
-        reachable[INDEX_AUDIENCE_ROOM14B]++;
-        reachable[INDEX_AUDIENCE_ROOM30]++;
-        reachable[INDEX_AUDIENCE_ROOM30B]++;
-        reachable[INDEX_OUTER_WALL0]++;
+        // Jump Level 5, or if nerfRocWing not in use
+        if (!nerfRocWing || jumpLevel >= 5)
+        {
+            reachable[INDEX_SEALED_ROOM3]++;
 
-        reachable[INDEX_CHAPEL_TOWER26]++;
-        reachable[INDEX_CHAPEL_TOWER26B]++;
-        reachable[INDEX_UNDERGROUND_WATERWAY13]++;
-        reachable[INDEX_UNDERGROUND_WATERWAY18]++;
-        reachable[INDEX_OBSERVATION_TOWER1]++;
-        reachable[INDEX_OBSERVATION_TOWER2]++;
-        reachable[INDEX_OBSERVATION_TOWER3]++;
-        reachable[INDEX_OBSERVATION_TOWER5]++;
-        reachable[INDEX_OBSERVATION_TOWER8]++;
-        reachable[INDEX_OBSERVATION_TOWER9]++;
-        reachable[INDEX_OBSERVATION_TOWER12]++;
-        reachable[INDEX_OBSERVATION_TOWER13]++;
-        reachable[INDEX_OBSERVATION_TOWER16]++;
-        reachable[INDEX_OBSERVATION_TOWER20]++;
-        reachable[INDEX_BATTLEARENA24]++;
+            reachable[INDEX_OBSERVATION_TOWER1]++;
+            reachable[INDEX_OBSERVATION_TOWER2]++;
+            reachable[INDEX_OBSERVATION_TOWER3]++;
+            reachable[INDEX_OBSERVATION_TOWER5]++;
+            reachable[INDEX_OBSERVATION_TOWER8]++;
+            reachable[INDEX_OBSERVATION_TOWER9]++;
+            reachable[INDEX_OBSERVATION_TOWER12]++;
+            reachable[INDEX_OBSERVATION_TOWER13]++;
+            reachable[INDEX_OBSERVATION_TOWER16]++;
+            reachable[INDEX_OBSERVATION_TOWER20]++;
+            reachable[INDEX_BATTLEARENA24]++; // This is not strictly correct, but we're never going to place an item here
+        } 
+
+        // Jump Level 4, or if nerfRocWing not in use
+        if (!nerfRocWing || jumpLevel >= 4)
+        {
+            reachable[INDEX_ABYSS_STAIRWAY4]++;
+            reachable[INDEX_AUDIENCE_ROOM14B]++;
+            reachable[INDEX_OUTER_WALL0]++;
+        }
+
+        // Jump Level 4 or Jump Level 3 with Ice/Stone, or if nerfRocWing not in use
+        if (!nerfRocWing || jumpLevel >= 4 || (jumpLevel >= 3 && hasIceOrStone))
+        {
+            reachable[INDEX_AUDIENCE_ROOM30]++;
+            reachable[INDEX_AUDIENCE_ROOM30B]++;
+            reachable[INDEX_CHAPEL_TOWER26]++;
+            reachable[INDEX_CHAPEL_TOWER26B]++;
+        }
+
+        // Jump Level 3, or if nerfRocWing not in use
+        if (!nerfRocWing || jumpLevel >= 3)
+        {
+            reachable[INDEX_UNDERGROUND_WATERWAY13]++;
+            reachable[INDEX_UNDERGROUND_WATERWAY18]++;
+        }
     }
+
+
 
     // Double and Tackle
     if (rocOrDouble && keyItems[INDEX_KEYITEM_TACKLE])
@@ -213,8 +277,12 @@ static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOr
     // Double and Kick Boots
     if (rocOrDouble && rocOrKickBoots)
     {
-        reachable[INDEX_AUDIENCE_ROOM17B]++;
-        reachable[INDEX_AUDIENCE_ROOM19]++;
+        if (!nerfRocWing || jumpLevel >= 2)
+        {
+            reachable[INDEX_AUDIENCE_ROOM17B]++;
+            reachable[INDEX_AUDIENCE_ROOM19]++;
+        }
+
         reachable[INDEX_ETERNAL_CORRIDOR7]++;
         reachable[INDEX_ETERNAL_CORRIDOR9]++;
         reachable[INDEX_CHAPEL_TOWER5]++;
@@ -229,7 +297,11 @@ static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOr
     // Double or Kick Boots
     if (rocOrDouble || rocOrKickBoots)
     {
-        reachable[INDEX_CATACOMB14B]++;
+        if (!nerfRocWing || jumpLevel >= 1 || keyItems[INDEX_KEYITEM_KICKBOOTS])
+        {
+            reachable[INDEX_CATACOMB14B]++;
+        }
+
         reachable[INDEX_ABYSS_STAIRWAY2]++;
         reachable[INDEX_ABYSS_STAIRWAY3]++;
     }
@@ -244,34 +316,59 @@ static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOr
     // Tackle and Roc Wing
     if (keyItems[INDEX_KEYITEM_TACKLE] && keyItems[INDEX_KEYITEM_ROCWING])
     {
-        reachable[INDEX_AUDIENCE_ROOM26]++;
+        if (!nerfRocWing || jumpLevel >= 5)
+        {
+            reachable[INDEX_AUDIENCE_ROOM26]++;
+        }
     }
 
     // Iron Maiden and Roc Wing OR Double, Kick Boots, Iron Maiden, and Ice/Stone
     if ((ironMaiden && keyItems[INDEX_KEYITEM_ROCWING]) || (ironMaiden && keyItems[INDEX_KEYITEM_DOUBLE] && keyItems[INDEX_KEYITEM_KICKBOOTS] && hasIceOrStone))
     {
-        reachable[INDEX_UNDERGROUND_GALLERY3]++;
-        reachable[INDEX_UNDERGROUND_GALLERY3B]++;
+        if (!nerfRocWing || (jumpLevel >= 2 && ironMaiden) || (ironMaiden && keyItems[INDEX_KEYITEM_DOUBLE] && keyItems[INDEX_KEYITEM_KICKBOOTS] && hasIceOrStone))
+        {
+            reachable[INDEX_UNDERGROUND_GALLERY3]++;
+        }
+
+
+        if (!nerfRocWing || (jumpLevel >= 4 && ironMaiden) || (ironMaiden && keyItems[INDEX_KEYITEM_DOUBLE] && keyItems[INDEX_KEYITEM_KICKBOOTS] && hasIceOrStone))
+        {
+            reachable[INDEX_UNDERGROUND_GALLERY3B]++;
+        }
+
     }
 
     // Iron Maiden, Roc Wing, Cleansing
     if (ironMaiden && keyItems[INDEX_KEYITEM_ROCWING] && (keyItems[INDEX_KEYITEM_CLEANSING] || ignoreCleansing))
     {
+        if (!nerfRocWing || ((jumpLevel >= 2 && ironMaiden && keyItems[INDEX_KEYITEM_CLEANSING]) || ignoreCleansing))
+        {
             reachable[INDEX_UNDERGROUND_WATERWAY8]++;
+        }
     }
     
     // Tackle, Heavy Ring, and Roc Wing
     if (keyItems[INDEX_KEYITEM_TACKLE] && keyItems[INDEX_KEYITEM_HEAVYRING] && keyItems[INDEX_KEYITEM_ROCWING])
     {
-        reachable[INDEX_UNDERGROUND_WAREHOUSE10]++;
-        reachable[INDEX_UNDERGROUND_WAREHOUSE16B]++;
+        if (!nerfRocWing || (jumpLevel >= 5 && keyItems[INDEX_KEYITEM_TACKLE] && keyItems[INDEX_KEYITEM_HEAVYRING]) || (jumpLevel >= 4 && keyItems[INDEX_KEYITEM_TACKLE] && keyItems[INDEX_KEYITEM_HEAVYRING] && hasIceOrStone))
+        {
+            reachable[INDEX_UNDERGROUND_WAREHOUSE10]++;
+        }
+
+        if (!nerfRocWing || (jumpLevel >= 3 && keyItems[INDEX_KEYITEM_TACKLE] && keyItems[INDEX_KEYITEM_HEAVYRING]) || (jumpLevel >= 2 && keyItems[INDEX_KEYITEM_TACKLE] && keyItems[INDEX_KEYITEM_HEAVYRING] && hasIceOrStone))
+        {
+            reachable[INDEX_UNDERGROUND_WAREHOUSE16B]++;
+        }
     }
 
     // Double, Tackle, and Kick Boots
     if (rocOrDouble && keyItems[INDEX_KEYITEM_TACKLE] && rocOrKickBoots)
     {
-        reachable[INDEX_MACHINE_TOWER3]++;
-        reachable[INDEX_MACHINE_TOWER6]++;
+        if (!nerfRocWing || jumpLevel >= 2 || (keyItems[INDEX_KEYITEM_DOUBLE && keyItems[INDEX_KEYITEM_TACKLE] && keyItems[INDEX_KEYITEM_KICKBOOTS]]))
+        {
+            reachable[INDEX_MACHINE_TOWER3]++;
+            reachable[INDEX_MACHINE_TOWER6]++;
+        }
     }
 
     // Double, Tackle, and Heavy Ring
@@ -291,7 +388,11 @@ static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOr
 
     if (rocOrDouble && keyItems[INDEX_KEYITEM_TACKLE] && keyItems[INDEX_KEYITEM_HEAVYRING] && (keyItems[INDEX_KEYITEM_ROCWING] || hasIceOrStone))
     {
-        reachable[INDEX_UNDERGROUND_WAREHOUSE14]++; // If you solved the puzzle before checking this spot, it is no longer reachable without ice or stone or Roc Wing
+        if (!nerfRocWing || (keyItems[INDEX_KEYITEM_TACKLE] && keyItems[INDEX_KEYITEM_HEAVYRING] && (jumpLevel >= 2 || (keyItems[INDEX_KEYITEM_DOUBLE] && hasIceOrStone))))
+        {
+            reachable[INDEX_UNDERGROUND_WAREHOUSE14]++; // If you solved the puzzle before checking this spot, it is no longer reachable without ice or stone or Roc Wing, so we require these in logic despite an early check being possible
+        }
+        
     }
 
     // Double and Iron Maiden
@@ -367,7 +468,10 @@ static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOr
     // is behind the door, which would not be nice
     if (rocOrDouble && (keyItems[INDEX_KEYITEM_LASTKEY] >= last_keys_count) && (rocOrKickBoots || keyItems[INDEX_KEYITEM_ROCWING]))
     {
-        reachable[INDEX_CEREMONIAL_ROOM1]++;
+        if (!nerfRocWing || (rocOrDouble && (keyItems[INDEX_KEYITEM_LASTKEY] >= last_keys_count) && (rocOrKickBoots || jumpLevel >= 3)))
+        {
+            reachable[INDEX_CEREMONIAL_ROOM1]++;
+        }
     }
 
     // Double, Iron Maiden, and Cleansing OR Roc Wing
@@ -380,23 +484,38 @@ static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOr
     // Double, Kick Boots, and Ice/Stone OR Roc Wing
     if ((rocOrDouble && rocOrKickBoots && hasIceOrStone) || keyItems[INDEX_KEYITEM_ROCWING])
     {
-        reachable[INDEX_TRIUMPH_HALLWAY3]++;
-        reachable[INDEX_CHAPEL_TOWER1]++;
-
-        reachable[INDEX_CHAPEL_TOWER13]++;
+        if (!nerfRocWing || jumpLevel >= 2 || (keyItems[INDEX_KEYITEM_DOUBLE] && keyItems[INDEX_KEYITEM_KICKBOOTS] && hasIceOrStone))
+        {
+            reachable[INDEX_TRIUMPH_HALLWAY3]++;
+            reachable[INDEX_CHAPEL_TOWER1]++;
+            reachable[INDEX_CHAPEL_TOWER13]++;
+        }
     }
 
     // Double, Ice/Stone, and Iron Maiden OR Roc Wing and Iron Maiden
     if ((rocOrDouble && hasIceOrStone && ironMaiden && (keyItems[INDEX_KEYITEM_CLEANSING] || ignoreCleansing)) || (keyItems[INDEX_KEYITEM_ROCWING] && ironMaiden && (keyItems[INDEX_KEYITEM_CLEANSING] || ignoreCleansing)))
     {
-        reachable[INDEX_UNDERGROUND_WATERWAY5]++;
+        if (!nerfRocWing || (((keyItems[INDEX_KEYITEM_CLEANSING] || ignoreCleansing) && ironMaiden) && ((keyItems[INDEX_KEYITEM_DOUBLE] && hasIceOrStone) || jumpLevel >= 3)) )
+        {
+            reachable[INDEX_UNDERGROUND_WATERWAY5]++;
+        }
+        
     }
 
     // Double and Ice/Stone OR Roc Wing
     if ((rocOrDouble && hasIceOrStone) || keyItems[INDEX_KEYITEM_ROCWING])
     {
-        reachable[INDEX_CATACOMB3B]++;
-        reachable[INDEX_OUTER_WALL1]++;
+        // Jump Level 3, Jump Level 1 and Ice/Stone, or if nerfRocWing not in use
+        if (!nerfRocWing || jumpLevel >= 3 || (jumpLevel >= 1 && hasIceOrStone))
+        {
+            reachable[INDEX_CATACOMB3B]++;
+        }
+
+        // Jump Level 5, Double and Ice/Stone, or if nerfRocWing not in use
+        if (!nerfRocWing || jumpLevel >= 5 || (jumpLevel >= 1 && hasIceOrStone))
+        {
+            reachable[INDEX_OUTER_WALL1]++;
+        }
     }
 
     // Double, Kick Boots, Iron Maiden, and Tackle

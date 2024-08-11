@@ -99,6 +99,10 @@ void optionMenu(struct seed_options *options)
         {
             options->skipMagicItemTutorials = !options->skipMagicItemTutorials;
         }
+        else if (selection == MENU_NERFROCWING)
+        {
+            options->nerfRocWing = !options->nerfRocWing;
+        }
     }
 
     // Flush the input buffer
@@ -158,6 +162,7 @@ static void displayMenu(struct seed_options *options)
     printf("[%s] 16. Patch DSS run speed increase. The Pluto and Griffin DSS card speed increase will apply even when jumping.\n", options->dssRunSpeed ? checked : unchecked);
     printf("[%s] 17. Skip cutscenes. Cutscenes will proceed without dialogue.\n", options->skipCutscenes ? checked : unchecked);
     printf("[%s] 18. Skip Magic Item tutorials. Magic Items will no longer provide guidance on item use when obtained.\n", options->skipMagicItemTutorials ? checked : unchecked);
+    printf("[%s] 19. Nerf the Roc Wing. Roc Wing will be less effective while Double or Kick Boots have not yet been obtained. Read the guide for details.\n", options->nerfRocWing ? checked : unchecked);
 
     printf("\n>");
 }

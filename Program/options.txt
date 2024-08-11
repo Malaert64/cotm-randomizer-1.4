@@ -1,11 +1,10 @@
-#For boolean values, use 0 or 1. For int values, use the int, further instructions available in the menu if you aren't running headless.
 ignoreCleansing 0 #boolean
 applyAutoRunPatch 0 #boolean
 applyNoDSSGlitchPatch 0 #boolean
 applyAllowSpeedDash 0 #boolean
 breakIronMaidens 0 #boolean
-lastKeyRequired 0 #int
-lastKeyAvailable 0 #int
+lastKeyRequired 1 #int
+lastKeyAvailable 1 #int
 applyBuffFamiliars 0 #boolean
 applyBuffSubweapons 0 #boolean
 applyShooterStrength 0 #boolean
@@ -19,3 +18,4 @@ allBossesRequired 0 #boolean
 dssRunSpeed 0 #boolean
 skipCutscenes 0 #boolean
 skipMagicItemTutorials 0 #boolean
+nerfRocWing 0 #boolean

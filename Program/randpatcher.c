@@ -163,8 +163,21 @@ int randompatch(FILE* rom, unsigned int randomizer_seed, struct seed_options *op
             return 1;
         }
 
+    if (options->nerfRocWing)
+        if (applyIPS(rom, IPS_NERFROCWING) == 1) {
+            printf("Failed to apply IPS.\n");
+            return 1;
+        }
+
     // Fix Y-coordinates for magic items and max ups
     graphicsFix(rom);
+
+    // Fix graphics via drop rework patch
+    if (applyIPS(rom, IPS_DROPREWORK) == 1)
+    {
+        printf("Failed to apply IPS.\n");
+        return 1;
+    }
 
     return 0;
 }

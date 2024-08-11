@@ -18,9 +18,12 @@ int main (int argc, char *argv[])
     FILE *rom;
     FILE *seed;
     FILE *optionsfile;
-    bool headless;
+    
     char buffer[BUFFER_SIZE];
     size_t bytes_read;
+
+    bool headless = false;
+    int boolstorage;
 
     unsigned int randomizer_seed;
 
@@ -44,6 +47,7 @@ int main (int argc, char *argv[])
         false,
         false,
         false,
+        false,
         false
     };
 
@@ -54,11 +58,11 @@ int main (int argc, char *argv[])
         getchar();
         return 1;
     }
-    if (argc == 3){
-        if (strcmp(argv[3], "headless") != 0){
-            headless = true;
-        }
+    else if (argc == 3 && strcmp(argv[2], "headless") == 0)
+    {
+        headless = true;
     }
+
     // Print a little credits line
     printf("Castlevania: Circle of the Moon Randomizer\nReverse engineering and game program: DevAnj\nOptional patches: fusecavator\nRandomizer logic and patch program: spooky\nEmotional support: Circle of the Moon Speedrunning Discord @ https://discord.gg/Ae7Qjd5xDu\n");
     if (!headless){
@@ -106,49 +110,50 @@ int main (int argc, char *argv[])
     }
     optionsfile = fopen(OPTIONS_FILENAME, "r");
     if (optionsfile == NULL){
-        printf("No Options file, using default options currently; opening the menu if not headless");
+        printf("No options file exists. Headless mode cannot be used.\n");
     }
     else
     {
-        int boolstorage;
-        fscanf(optionsfile, "ignoreCleansing %d", &boolstorage);
+        fscanf(optionsfile, "ignoreCleansing %d #boolean\n", &boolstorage);
         options.ignoreCleansing = boolstorage;
-        fscanf(optionsfile, "applyAutoRunPatch %d", &boolstorage);
+        fscanf(optionsfile, "applyAutoRunPatch %d #boolean\n", &boolstorage);
         options.applyAutoRunPatch = boolstorage;
-        fscanf(optionsfile, "applyNoDSSGlitchPatch %d", &boolstorage);
+        fscanf(optionsfile, "applyNoDSSGlitchPatch %d #boolean\n", &boolstorage);
         options.applyNoDSSGlitchPatch = boolstorage;
-        fscanf(optionsfile, "applyAllowSpeedDash %d", &boolstorage);
+        fscanf(optionsfile, "applyAllowSpeedDash %d #boolean\n", &boolstorage);
         options.applyAllowSpeedDash = boolstorage;
-        fscanf(optionsfile, "breakIronMaidens %d", &boolstorage);
+        fscanf(optionsfile, "breakIronMaidens %d #boolean\n", &boolstorage);
         options.breakIronMaidens = boolstorage;
-        fscanf(optionsfile, "lastKeyRequired %d", &options.lastKeyRequired);
-        fscanf(optionsfile, "lastKeyAvailable %d", &options.lastKeyAvailable);
-        fscanf(optionsfile, "applyBuffFamiliars %d", &boolstorage);
+        fscanf(optionsfile, "lastKeyRequired %d #int\n", &options.lastKeyRequired);
+        fscanf(optionsfile, "lastKeyAvailable %d #int\n", &options.lastKeyAvailable);
+        fscanf(optionsfile, "applyBuffFamiliars %d #boolean\n", &boolstorage);
         options.applyBuffFamiliars = boolstorage;
-        fscanf(optionsfile, "applyBuffSubweapons %d", &boolstorage);
+        fscanf(optionsfile, "applyBuffSubweapons %d #boolean\n", &boolstorage);
         options.applyBuffSubweapons = boolstorage;
-        fscanf(optionsfile, "applyShooterStrength %d", &boolstorage);
+        fscanf(optionsfile, "applyShooterStrength %d #boolean\n", &boolstorage);
         options.applyShooterStrength = boolstorage;
-        fscanf(optionsfile, "doNotRandomizeItems %d", &boolstorage);
+        fscanf(optionsfile, "doNotRandomizeItems %d #boolean\n", &boolstorage);
         options.doNotRandomizeItems = boolstorage;
-        fscanf(optionsfile, "RandomItemHardMode %d", &boolstorage);
+        fscanf(optionsfile, "RandomItemHardMode %d #boolean\n", &boolstorage);
         options.RandomItemHardMode = boolstorage;
-        fscanf(optionsfile, "halveDSSCards %d", &boolstorage);
+        fscanf(optionsfile, "halveDSSCards %d #boolean\n", &boolstorage);
         options.halveDSSCards = boolstorage;
-        fscanf(optionsfile, "countdown %d", &boolstorage);
+        fscanf(optionsfile, "countdown %d #boolean\n", &boolstorage);
         options.countdown = boolstorage;
-        fscanf(optionsfile, "subweaponShuffle %d", &boolstorage);
+        fscanf(optionsfile, "subweaponShuffle %d #boolean\n", &boolstorage);
         options.subweaponShuffle = boolstorage;
-        fscanf(optionsfile, "noMPDrain %d", &boolstorage);
+        fscanf(optionsfile, "noMPDrain %d #boolean\n", &boolstorage);
         options.noMPDrain = boolstorage;
-        fscanf(optionsfile, "allBossesRequired %d", &boolstorage);
+        fscanf(optionsfile, "allBossesRequired %d #boolean\n", &boolstorage);
         options.allBossesRequired = boolstorage;
-        fscanf(optionsfile, "dssRunSpeed %d", &boolstorage);
+        fscanf(optionsfile, "dssRunSpeed %d #boolean\n", &boolstorage);
         options.dssRunSpeed = boolstorage;
-        fscanf(optionsfile, "skipCutscenes %d", &boolstorage);
+        fscanf(optionsfile, "skipCutscenes %d #boolean\n", &boolstorage);
         options.skipCutscenes = boolstorage;
-        fscanf(optionsfile, "skipMagicItemTutorials %d", &boolstorage);
+        fscanf(optionsfile, "skipMagicItemTutorials %d #boolean\n", &boolstorage);
         options.skipMagicItemTutorials = boolstorage;
+        fscanf(optionsfile, "nerfRocWing %d #boolean\n", &boolstorage);
+        options.nerfRocWing = boolstorage;
     }
     // Open the menu to allow selecting optional settings and patches
     if (!headless){

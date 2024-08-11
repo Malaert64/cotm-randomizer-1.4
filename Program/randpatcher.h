@@ -97,3 +97,9 @@ int randompatch(FILE* rom, unsigned int randomizer_seed, struct seed_options *op
 
 // Optional patch created by Liquid Cat. The text printed after Magic Items are obtained will not appear.
 #define IPS_SKIPMAGICITEMTUTORIALS "ips/SkipMagicItemTutorials.ips"
+
+// Patch created by Fusecavator. Makes changes to dropped item graphics to avoid garbled Magic Items and allow displaying arbitrary items.
+#define IPS_DROPREWORK "ips/DropRework.ips"
+
+// Optional patch created by Liquid Cat. Changes the behavior of the Roc Wing depending on which other Magic Items have been obtained.
+#define IPS_NERFROCWING "ips/NerfRocWing.ips"

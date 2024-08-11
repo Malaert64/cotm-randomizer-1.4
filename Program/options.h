@@ -24,6 +24,7 @@ struct seed_options {
     bool dssRunSpeed;
     bool skipCutscenes;
     bool skipMagicItemTutorials;
+    bool nerfRocWing;
 };
 
 #endif
