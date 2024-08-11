@@ -167,7 +167,7 @@ LOCATIONS:
 
 -CC3   - Catacomb: Fleamen brain room - Lower: Jump Lv. 1
 
--CC3b  - Catacomb: Fleamen brain room - Upper: Jump Lv. 3 OR Jump Lv. 1 + Freeze
+-CC3b  - Catacomb: Fleamen brain room - Upper: Jump Lv. 4 OR Jump Lv. 1 + Freeze
 
 -CC8b  - Catacomb: Earth Demon bone pit - Upper: Jump Lv. 3 OR Kick
 
