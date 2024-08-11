@@ -37,5 +37,5 @@ clean :
 ifeq ($(OS), Windows_NT)
 	del $(EXECUTABLE) $(OBJECTS)
 else
-	rm $(EXECUTABLE) $(OBJECTS)
+	rm -f $(EXECUTABLE) $(OBJECTS)
 endif
