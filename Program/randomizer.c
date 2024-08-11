@@ -506,7 +506,7 @@ static void findAllItemsReachable(int reachable[], int keyItems[], bool hasIceOr
     if ((rocOrDouble && hasIceOrStone) || keyItems[INDEX_KEYITEM_ROCWING])
     {
         // Jump Level 3, Jump Level 1 and Ice/Stone, or if nerfRocWing not in use
-        if (!nerfRocWing || jumpLevel >= 3 || (jumpLevel >= 1 && hasIceOrStone))
+        if (!nerfRocWing || jumpLevel >= 4 || (jumpLevel >= 1 && hasIceOrStone))
         {
             reachable[INDEX_CATACOMB3B]++;
         }
