@@ -357,9 +357,8 @@ Optional patch created by Liquid Cat. Changes the behavior of the Roc Wing depen
 # Changes:
 
 1.4:
-  - Item drop tables and distribution logic completely reworked by Malaert64.
-  - Random Item Hardmode has been redesigned as Tiered Items Mode, also by Malaert64.
-  - Added "All Bosses and Battle Arena Required" toggle, put together by Malaert64.
+  - Malaert64 edited the randomizer drop tables and distribution logic to support the new Tiered Item Drops optional rule which replaces Random Item Hardmode.
+  - Malaert64 added the All Bosses and Battle Arena Required optional rule which requires that not only all bosses, but also the Battle Arena be completed in its entirety to obtain an additional required Last Key.
 
 1.3:
   - Added a patch by Fusecavator to fix the garbled Magic Item issue.
