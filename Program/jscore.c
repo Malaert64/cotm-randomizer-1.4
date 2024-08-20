@@ -117,27 +117,28 @@ int cotmr_randomize(int seed, char* option_str) {
     char* param_pos;
 
     struct seed_options options = {
-        false,
-        false,
-        false,
-        false,
-        false,
-        1,
-        1,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
+        false, // ignoreCleansing
+        false, // applyAutoRunPatch
+        false, // applyNoDSSGlitchPatch
+        false, // applyAllowSpeedDash
+        false, // breakIronMaidens
+        1, // lastKeyRequired
+        1, // lastKeyAvailable
+        false, // applyBuffFamiliars
+        false, // applyBuffSubweapons
+        false, // applyShooterStrength
+        false, // doNotRandomizeItems
+        false, // tieredItemsMode 
+        false, // halveDSSCards
+        false, // countdown
+        false, // subweaponShuffle
+        false, // noMPDrain
+        false, // allBossesRequired
+        false, // allBossesAndBattleArenaRequired
+        false, // dssRunSpeed
+        false, // skipCutscenes
+        false, // skipMagicItemTutorials
+        false // nerfRocWing
     };
 
     param_pos = strtok(option_str,",");

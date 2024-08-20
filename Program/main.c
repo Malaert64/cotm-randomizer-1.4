@@ -28,28 +28,28 @@ int main (int argc, char *argv[])
     unsigned int randomizer_seed;
 
     struct seed_options options = {
-        false,
-        false,
-        false,
-        false,
-        false,
-        1,
-        1,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
+        false, // ignoreCleansing
+        false, // applyAutoRunPatch
+        false, // applyNoDSSGlitchPatch
+        false, // applyAllowSpeedDash
+        false, // breakIronMaidens
+        1, // lastKeyRequired
+        1, // lastKeyAvailable
+        false, // applyBuffFamiliars
+        false, // applyBuffSubweapons
+        false, // applyShooterStrength
+        false, // doNotRandomizeItems
+        false, // tieredItemsMode 
+        false, // halveDSSCards
+        false, // countdown
+        false, // subweaponShuffle
+        false, // noMPDrain
+        false, // allBossesRequired
+        false, // allBossesAndBattleArenaRequired
+        false, // dssRunSpeed
+        false, // skipCutscenes
+        false, // skipMagicItemTutorials
+        false // nerfRocWing
     };
 
     // Validate program is being run with an input ROM

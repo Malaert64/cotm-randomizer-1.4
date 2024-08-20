@@ -9,12 +9,13 @@ applyBuffFamiliars 0 #boolean
 applyBuffSubweapons 0 #boolean
 applyShooterStrength 0 #boolean
 doNotRandomizeItems 0 #boolean
-RandomItemHardMode 0 #boolean
+tieredItemsMode 0 #boolean
 halveDSSCards 0 #boolean
 countdown 0 #boolean
 subweaponShuffle 0 #boolean
 noMPDrain 0 #boolean
 allBossesRequired 0 #boolean
+allBossesAndBattleArenaRequired 0 #boolean
 dssRunSpeed 0 #boolean
 skipCutscenes 0 #boolean
 skipMagicItemTutorials 0 #boolean
