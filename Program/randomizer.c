@@ -13,9 +13,170 @@ static int getRandomHighPriorityValidPedestal(int reachable[], int item_assignme
 static int getRandomUnplacedDSSCard(bool dssCards[]);
 
 static void populateEnemyDrops(int regular_drops[], int rare_drops[], int regular_drop_chance[], int rare_drop_chance[], struct seed_options *options);
-static int selectDrop(const int dropList[], int dropsPlaced[], int number_drops, bool exclusiveDrop, bool randomItemHardmode);
+static int selectDrop(const int dropList[], int dropsPlaced[], int number_drops, bool exclusiveDrop);
 
 static void writeIPS(FILE* randomizer_patch, int item_assignment[], int regular_drops[], int rare_drops[], int regular_drop_chance[], int rare_drop_chance[], struct seed_options *options, FILE* spoiler_log);
+
+/* A better way of handling enemy data - we can now have IDs 
+and HP and the like all associated with each other properly.
+
+Had to put this stuff here rather than addresses.h or randomizer.h 
+because of "multiple definition" errors on compile - probably something 
+screwy with the #include statements in this program. -Malaert64 */
+typedef struct {
+    int index;
+    char name[20];
+    int hp;
+    int atk;
+    int def;
+    int exp;
+} EnemyData;
+
+/* I omitted Coffin from the end of this, as its presence doesn't
+actually impact the randomizer (all stats and drops inherited from Mummy). */
+EnemyData enemies_data_table[NUMBER_ENEMIES] = {
+    {0, "Medusa Head", 6, 120, 60, 2},
+    {1, "Zombie", 48, 70, 20, 2},
+    {2, "Ghoul", 100, 190, 79, 3},
+    {3, "Wight", 110, 235, 87, 4},
+    {4, "Clinking Man", 80, 135, 25, 21},
+    {5, "Zombie Thief", 120, 185, 30, 58},
+    {6, "Skeleton", 25, 65, 45, 4},
+    {7, "Skeleton Bomber", 20, 50, 40, 4},
+    {8, "Electric Skeleton", 42, 80, 50, 30},
+    {9, "Skeleton Spear", 30, 65, 46, 6},
+    {10, "Skeleton Boomerang", 60, 170, 90, 112},
+    {11, "Skeleton Soldier", 35, 90, 60, 16},
+    {12, "Skeleton Knight", 50, 140, 80, 39},
+    {13, "Bone Tower", 84, 201, 280, 160},
+    {14, "Fleaman", 60, 142, 45, 29},
+    {15, "Poltergeist", 105, 360, 380, 510},
+    {16, "Bat", 5, 50, 15, 4},
+    {17, "Spirit", 9, 55, 17, 1},
+    {18, "Ectoplasm", 12, 165, 51, 2},
+    {19, "Specter", 15, 295, 95, 3},
+    {20, "Axe Armor", 55, 120, 130, 31},
+    {21, "Flame Armor", 160, 320, 300, 280},
+    {22, "Flame Demon", 300, 315, 270, 600},
+    {23, "Ice Armor", 240, 470, 520, 1500},
+    {24, "Thunder Armor", 204, 340, 320, 800},
+    {25, "Wind Armor", 320, 500, 460, 1800},
+    {26, "Earth Armor", 130, 230, 280, 240},
+    {27, "Poison Armor", 260, 382, 310, 822},
+    {28, "Forest Armor", 370, 390, 390, 1280},
+    {29, "Stone Armor", 90, 220, 320, 222},
+    {30, "Ice Demon", 350, 492, 510, 4200},
+    {31, "Holy Armor", 350, 420, 450, 1700},
+    {32, "Thunder Demon", 180, 270, 230, 450},
+    {33, "Dark Armor", 400, 680, 560, 3300},
+    {34, "Wind Demon", 400, 540, 490, 3600},
+    {35, "Bloody Sword", 30, 220, 500, 200},
+    {36, "Golem", 650, 520, 700, 1400},
+    {37, "Earth Demon", 150, 90, 85, 25},
+    {38, "Were-wolf", 160, 265, 110, 140},
+    {39, "Man Eater", 400, 330, 233, 700},
+    {40, "Devil Tower", 10, 140, 200, 17},
+    {41, "Skeleton Athlete", 100, 100, 50, 25},
+    {42, "Harpy", 120, 275, 200, 271},
+    {43, "Siren", 160, 443, 300, 880},
+    {44, "Imp", 90, 220, 99, 103},
+    {45, "Mudman", 25, 79, 30, 2},
+    {46, "Gargoyle", 60, 160, 66, 3},
+    {47, "Slime", 40, 102, 18, 11},
+    {48, "Frozen Shade", 112, 490, 560, 1212},
+    {49, "Heat Shade", 80, 240, 200, 136},
+    {50, "Poison Worm", 120, 30, 20, 12},
+    {51, "Myconid", 50, 250, 114, 25},
+    {52, "Will O'Wisp", 11, 110, 16, 9},
+    {53, "Spearfish", 40, 360, 450, 280},
+    {54, "Merman", 60, 303, 301, 10},
+    {55, "Minotaur", 410, 520, 640, 2000},
+    {56, "Were-horse", 400, 540, 360, 1970},
+    {57, "Marionette", 80, 160, 150, 127},
+    {58, "Gremlin", 30, 80, 33, 2},
+    {59, "Hopper", 40, 87, 35, 8},
+    {60, "Evil Pillar", 20, 460, 800, 480},
+    {61, "Were-panther", 200, 300, 130, 270},
+    {62, "Were-jaguar", 270, 416, 170, 760},
+    {63, "Bone Head", 24, 60, 80, 7},
+    {64, "Fox Archer", 75, 130, 59, 53},
+    {65, "Fox Hunter", 100, 290, 140, 272},
+    {66, "Were-bear", 265, 250, 140, 227},
+    {67, "Grizzly", 600, 380, 200, 960},
+    {68, "Cerberus", 600, 150, 100, 500},
+    {69, "Beast Demon", 150, 330, 250, 260},
+    {70, "Arch Demon", 320, 505, 400, 1000},
+    {71, "Demon Lord", 460, 660, 500, 1950},
+    {72, "Gorgon", 230, 215, 165, 219},
+    {73, "Catoblepas", 550, 500, 430, 1800},
+    {74, "Succubus", 150, 400, 350, 710},
+    {75, "Fallen Angel", 370, 770, 770, 6000},
+    {76, "Necromancer", 500, 200, 250, 2500},
+    {77, "Hyena", 93, 140, 70, 105},
+    {78, "Fishhead", 80, 320, 504, 486},
+    {79, "Dryad", 120, 300, 360, 300},
+    {80, "Mimic Candle", 990, 600, 600, 6600},
+    {81, "Brain Float", 20, 50, 25, 10},
+    {82, "Evil Hand", 52, 150, 120, 63},
+    {83, "Abiondarg", 88, 388, 188, 388},
+    {84, "Iron Golem", 640, 290, 450, 8000},
+    {85, "Devil", 1080, 800, 900, 10000},
+    {86, "Witch", 144, 330, 290, 600},
+    {87, "Mummy", 100, 100, 35, 3},
+    {88, "Hipogriff", 300, 500, 210, 740},
+    {89, "Adramelech", 1800, 380, 360, 16000},
+    {90, "Arachne", 330, 420, 288, 1300},
+    {91, "Death Mantis", 200, 318, 240, 400},
+    {92, "Alraune", 774, 490, 303, 2500},
+    {93, "King Moth", 140, 290, 160, 150},
+    {94, "Killer Bee", 8, 308, 108, 88},
+    {95, "Dragon Zombie", 1400, 390, 440, 15000},
+    {96, "Lizardman", 100, 345, 400, 800},
+    {97, "Franken", 1200, 700, 350, 2100},
+    {98, "Legion", 420, 610, 375, 1590},
+    {99, "Dullahan", 240, 550, 440, 2200},
+    {100, "Death", 880, 600, 800, 60000},
+    {101, "Camilla", 1500, 650, 700, 80000},
+    {102, "Hugh", 1400, 570, 750, 120000},
+    {103, "Dracula", 1100, 805, 850, 150000},
+    {104, "Dracula", 3000, 1000, 1000, 0},
+    {105, "Skeleton Medalist", 250, 100, 100, 1500},
+    {106, "Were-jaguar", 320, 518, 260, 1200},
+    {107, "Were-wolf", 340, 525, 180, 1100},
+    {108, "Catoblepas", 560, 510, 435, 2000},
+    {109, "Hipogriff", 500, 620, 280, 1900},
+    {110, "Wind Demon", 490, 600, 540, 4000},
+    {111, "Witch", 210, 480, 340, 1000},
+    {112, "Stone Armor", 260, 585, 750, 3000},
+    {113, "Devil Tower", 50, 560, 700, 600},
+    {114, "Skeleton", 150, 400, 200, 500},
+    {115, "Skeleton Bomber", 150, 400, 200, 550},
+    {116, "Electric Skeleton", 150, 400, 200, 700},
+    {117, "Skeleton Spear", 150, 400, 200, 580},
+    {118, "Flame Demon", 680, 650, 600, 4500},
+    {119, "Bone Tower", 120, 500, 650, 800},
+    {120, "Fox Hunter", 160, 510, 220, 600},
+    {121, "Poison Armor", 380, 680, 634, 3600},
+    {122, "Bloody Sword", 55, 600, 1200, 2000},
+    {123, "Abiondarg", 188, 588, 288, 588},
+    {124, "Legion", 540, 760, 480, 2900},
+    {125, "Marionette", 200, 420, 400, 1200},
+    {126, "Minotaur", 580, 700, 715, 4100},
+    {127, "Arachne", 430, 590, 348, 2400},
+    {128, "Succubus", 300, 670, 630, 3100},
+    {129, "Demon Lord", 590, 800, 656, 4200},
+    {130, "Alraune", 1003, 640, 450, 5000},
+    {131, "Hyena", 210, 408, 170, 1000},
+    {132, "Devil Armor", 500, 804, 714, 6600},
+    {133, "Evil Pillar", 55, 655, 900, 1500},
+    {134, "White Armor", 640, 770, 807, 7000},
+    {135, "Devil", 1530, 980, 1060, 30000},
+    {136, "Scary Candle", 150, 300, 300, 900},
+    {137, "Trick Candle", 200, 400, 400, 1400},
+    {138, "Nightmare", 250, 550, 550, 2000},
+    {139, "Lilim", 400, 800, 800, 8000},
+    {140, "Lilith", 660, 960, 960, 20000},
+};
 
 void generateRandomizerPatch(FILE* randomizer_patch, unsigned int randomizer_seed, struct seed_options *options, FILE* spoiler_log)
 {
@@ -54,9 +215,6 @@ void generateRandomizerPatch(FILE* randomizer_patch, unsigned int randomizer_see
     // Assume that we have obtained Dash Boots already (via AutoDashBoots.ips)
     keyItems[INDEX_KEYITEM_DASHBOOTS] = true;
 
-    // Also assume that we assign Shinning Armor to the Battle Arena pedestal
-    item_assignment[INDEX_BATTLEARENA24] = INDEX_SPECIALITEM_SHINNINGARMOR;
-
     // If All Bosses Required is enabled, manually set the Last Key locations and fix the Last Key running total before placing any other items
     if (options->allBossesRequired)
     {
@@ -70,6 +228,26 @@ void generateRandomizerPatch(FILE* randomizer_patch, unsigned int randomizer_see
         item_assignment[INDEX_OBSERVATION_TOWER20] = INDEX_KEYITEM_LASTKEY;
 
         keyItems[INDEX_KEYITEM_LASTKEY] = last_keys_count;
+    }
+
+    /* If All Bosses + Battle Arena Required is enabled, manually 
+    set the Last Key locations and fix the Last Key running total 
+    before placing any other items. */
+    if (options->allBossesAndBattleArenaRequired) {
+        item_assignment[INDEX_CATACOMB24] = INDEX_KEYITEM_LASTKEY;
+        item_assignment[INDEX_AUDIENCE_ROOM25] = INDEX_KEYITEM_LASTKEY;
+        item_assignment[INDEX_MACHINE_TOWER19] = INDEX_KEYITEM_LASTKEY;
+        item_assignment[INDEX_CHAPEL_TOWER22] = INDEX_KEYITEM_LASTKEY;
+        item_assignment[INDEX_UNDERGROUND_GALLERY20] = INDEX_KEYITEM_LASTKEY;
+        item_assignment[INDEX_UNDERGROUND_WAREHOUSE23] = INDEX_KEYITEM_LASTKEY;
+        item_assignment[INDEX_UNDERGROUND_WATERWAY17] = INDEX_KEYITEM_LASTKEY;
+        item_assignment[INDEX_OBSERVATION_TOWER20] = INDEX_KEYITEM_LASTKEY;
+        item_assignment[INDEX_BATTLEARENA24] = INDEX_KEYITEM_LASTKEY; /* :) */
+
+        keyItems[INDEX_KEYITEM_LASTKEY] = last_keys_count;
+    } else {
+        /* Otherwise, assign Shinning Armor to end of Battle Arena. */
+        item_assignment[INDEX_BATTLEARENA24] = INDEX_SPECIALITEM_SHINNINGARMOR;
     }
 
     printf("Initialized arrays and initial items.\n");
@@ -849,305 +1027,324 @@ static int getRandomUnplacedDSSCard(bool dssCards[])
 
 static void populateEnemyDrops(int regular_drops[], int rare_drops[], int regular_drop_chance[], int rare_drop_chance[], struct seed_options *options)
 {
-    int placed_easy_items[NUMBER_EASY_ITEMS] = { 0 };
-    int placed_common_items[NUMBER_COMMON_ITEMS] = { 0 };
-    int placed_rare_items[NUMBER_COMMON_ITEMS + NUMBER_RARE_ITEMS] = { 0 };
+    /* Item arrays and tables revised by Malaert64: 
+    low, mid, and high are for Tiered Item Mode (TIM) logic,
+    while common and rare are used for normal (anything goes) logic. */
+    int placed_low_items[NUMBER_LOW_ITEMS] = { 0 };
+    int placed_mid_items[NUMBER_MID_ITEMS] = { 0 };
+    int placed_high_items[NUMBER_HIGH_ITEMS] = { 0 };
 
-    const int easy_items[NUMBER_EASY_ITEMS] =
+    int placed_common_items[NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS] = { 0 };
+    int placed_rare_items[NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS + NUMBER_HIGH_ITEMS] = { 0 };
+
+    const int low_items[NUMBER_LOW_ITEMS] =
     {
-        INDEX_ITEM_BODY_LEATHERARMOR,
-        INDEX_ITEM_BODY_COTTONROBE,
-        INDEX_ITEM_BODY_COTTONCLOTHES,
-        INDEX_ITEM_ARM_WRISTBAND,
         INDEX_ITEM_USE_POTION,
+        INDEX_ITEM_USE_MEAT,
+        INDEX_ITEM_USE_MINDRESTORE,
+        INDEX_ITEM_USE_HEART,
         INDEX_ITEM_USE_ANTIDOTE,
         INDEX_ITEM_USE_CURECURSE,
-        INDEX_ITEM_USE_MINDRESTORE,
-        INDEX_ITEM_USE_HEART
-    };
-
-    const int common_items[NUMBER_COMMON_ITEMS] = 
-    {
-        // Armor
-        INDEX_ITEM_BODY_LEATHERARMOR,
-        INDEX_ITEM_BODY_BRONZEARMOR,
-        INDEX_ITEM_BODY_GOLDARMOR,
-        INDEX_ITEM_BODY_CHAINMAIL,
-        INDEX_ITEM_BODY_STEELARMOR,
-
-        INDEX_ITEM_BODY_COTTONROBE,
-        INDEX_ITEM_BODY_SILKROBE,
-        INDEX_ITEM_BODY_RAINBOWROBE,
 
         INDEX_ITEM_BODY_COTTONCLOTHES,
         INDEX_ITEM_BODY_PRISONGARB,
-        INDEX_ITEM_BODY_STYLISHSUIT,
-
-        INDEX_ITEM_ARM_DOUBLEGRIPS,
-        INDEX_ITEM_ARM_STARBRACELET,
-        INDEX_ITEM_ARM_STRENGTHRING,
-        INDEX_ITEM_ARM_HARDRING,
-        INDEX_ITEM_ARM_INTELLIGENCERING,
-        INDEX_ITEM_ARM_LUCKRING,
-        INDEX_ITEM_ARM_CURSEDRING,
-
-        INDEX_ITEM_ARM_WRISTBAND,
-        INDEX_ITEM_ARM_GAUNTLET,
-        INDEX_ITEM_ARM_ARMGUARD,
-        INDEX_ITEM_ARM_MAGICGAUNTLET,
-        INDEX_ITEM_ARM_MIRACLEARMBAND,
-        INDEX_ITEM_ARM_BEARRING,
-        INDEX_ITEM_ARM_TOYRING,
-
-        // Consumables
-        INDEX_ITEM_USE_POTION,
-        INDEX_ITEM_USE_MEAT,
-        INDEX_ITEM_USE_SPICEDMEAT,
-
-        INDEX_ITEM_USE_ANTIDOTE,
-        INDEX_ITEM_USE_CURECURSE,
-        INDEX_ITEM_USE_MINDRESTORE,
-
-        INDEX_ITEM_USE_HEART,
-        INDEX_ITEM_USE_HEARTHIGH,
-    };
-
-    const int rare_items[NUMBER_COMMON_ITEMS + NUMBER_RARE_ITEMS] =
-    {
-        // Armor
+        INDEX_ITEM_BODY_COTTONROBE,
         INDEX_ITEM_BODY_LEATHERARMOR,
         INDEX_ITEM_BODY_BRONZEARMOR,
         INDEX_ITEM_BODY_GOLDARMOR,
-        INDEX_ITEM_BODY_CHAINMAIL,
-        INDEX_ITEM_BODY_STEELARMOR,
 
-        INDEX_ITEM_BODY_COTTONROBE,
-        INDEX_ITEM_BODY_SILKROBE,
-        INDEX_ITEM_BODY_RAINBOWROBE,
-
-        INDEX_ITEM_BODY_COTTONCLOTHES,
-        INDEX_ITEM_BODY_PRISONGARB,
-        INDEX_ITEM_BODY_STYLISHSUIT,
-
-        INDEX_ITEM_ARM_DOUBLEGRIPS,
-        INDEX_ITEM_ARM_STARBRACELET,
-        INDEX_ITEM_ARM_STRENGTHRING,
-        INDEX_ITEM_ARM_HARDRING,
-        INDEX_ITEM_ARM_INTELLIGENCERING,
-        INDEX_ITEM_ARM_LUCKRING,
-        INDEX_ITEM_ARM_CURSEDRING,
-
+        INDEX_ITEM_ARM_TOYRING,
+        INDEX_ITEM_ARM_BEARRING,
         INDEX_ITEM_ARM_WRISTBAND,
-        INDEX_ITEM_ARM_GAUNTLET,
         INDEX_ITEM_ARM_ARMGUARD,
         INDEX_ITEM_ARM_MAGICGAUNTLET,
         INDEX_ITEM_ARM_MIRACLEARMBAND,
-        INDEX_ITEM_ARM_BEARRING,
-        INDEX_ITEM_ARM_TOYRING,
+        INDEX_ITEM_ARM_GAUNTLET
+    };
 
-        // Consumables
-        INDEX_ITEM_USE_POTION,
-        INDEX_ITEM_USE_MEAT,
+    const int mid_items[NUMBER_MID_ITEMS] = 
+    {
         INDEX_ITEM_USE_SPICEDMEAT,
-
-        INDEX_ITEM_USE_ANTIDOTE,
-        INDEX_ITEM_USE_CURECURSE,
-        INDEX_ITEM_USE_MINDRESTORE,
-
-        INDEX_ITEM_USE_HEART,
+        INDEX_ITEM_USE_MINDHIGH,
         INDEX_ITEM_USE_HEARTHIGH,
 
-        // Nice Items
-        // Armor
+        INDEX_ITEM_BODY_STYLISHSUIT,
+        INDEX_ITEM_BODY_NIGHTSUIT,
+        INDEX_ITEM_BODY_SILKROBE,
+        INDEX_ITEM_BODY_RAINBOWROBE,
+        INDEX_ITEM_BODY_CHAINMAIL,
+        INDEX_ITEM_BODY_STEELARMOR,
         INDEX_ITEM_BODY_PLATINUMARMOR,
+
+        INDEX_ITEM_ARM_STARBRACELET,
+        INDEX_ITEM_ARM_CURSEDRING,
+        INDEX_ITEM_ARM_STRENGTHRING,
+        INDEX_ITEM_ARM_HARDRING,
+        INDEX_ITEM_ARM_INTELLIGENCERING,
+        INDEX_ITEM_ARM_LUCKRING,
+        INDEX_ITEM_ARM_DOUBLEGRIPS
+    };
+
+    const int high_items[NUMBER_HIGH_ITEMS] =
+    {
+        INDEX_ITEM_USE_POTIONHIGH,
+        INDEX_ITEM_USE_POTIONEX,
+        INDEX_ITEM_USE_MINDEX,
+        INDEX_ITEM_USE_HEARTEX,
+        INDEX_ITEM_USE_HEARTMEGA,
+
+        INDEX_ITEM_BODY_NINJAGARB,
+        INDEX_ITEM_BODY_SOLDIERFATIGUES,
+        INDEX_ITEM_BODY_MAGICROBE,
+        INDEX_ITEM_BODY_SAGEROBE,
         INDEX_ITEM_BODY_DIAMONDARMOR,
         INDEX_ITEM_BODY_MIRRORARMOR,
         INDEX_ITEM_BODY_NEEDLEARMOR,
         INDEX_ITEM_BODY_DARKARMOR,
 
-        INDEX_ITEM_BODY_MAGICROBE,
-        INDEX_ITEM_BODY_SAGEROBE,
+        INDEX_ITEM_ARM_STRENGTHARMBAND,
+        INDEX_ITEM_ARM_DEFENSEARMBAND,
+        INDEX_ITEM_ARM_SAGEARMBAND,
+        INDEX_ITEM_ARM_GAMBLERARMBAND        
+    };
 
+    const int common_items[NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS] = 
+    {
+        /* Low Tier Items */
+        INDEX_ITEM_USE_POTION,
+        INDEX_ITEM_USE_MEAT,
+        INDEX_ITEM_USE_MINDRESTORE,
+        INDEX_ITEM_USE_HEART,
+        INDEX_ITEM_USE_ANTIDOTE,
+        INDEX_ITEM_USE_CURECURSE,
+
+        INDEX_ITEM_BODY_COTTONCLOTHES,
+        INDEX_ITEM_BODY_PRISONGARB,
+        INDEX_ITEM_BODY_COTTONROBE,
+        INDEX_ITEM_BODY_LEATHERARMOR,
+        INDEX_ITEM_BODY_BRONZEARMOR,
+        INDEX_ITEM_BODY_GOLDARMOR,
+
+        INDEX_ITEM_ARM_TOYRING,
+        INDEX_ITEM_ARM_BEARRING,
+        INDEX_ITEM_ARM_WRISTBAND,
+        INDEX_ITEM_ARM_ARMGUARD,
+        INDEX_ITEM_ARM_MAGICGAUNTLET,
+        INDEX_ITEM_ARM_MIRACLEARMBAND,
+        INDEX_ITEM_ARM_GAUNTLET,
+
+        /* Mid Tier Items */
+        INDEX_ITEM_USE_SPICEDMEAT,
+        INDEX_ITEM_USE_MINDHIGH,
+        INDEX_ITEM_USE_HEARTHIGH,
+
+        INDEX_ITEM_BODY_STYLISHSUIT,
         INDEX_ITEM_BODY_NIGHTSUIT,
+        INDEX_ITEM_BODY_SILKROBE,
+        INDEX_ITEM_BODY_RAINBOWROBE,
+        INDEX_ITEM_BODY_CHAINMAIL,
+        INDEX_ITEM_BODY_STEELARMOR,
+        INDEX_ITEM_BODY_PLATINUMARMOR,
+
+        INDEX_ITEM_ARM_STARBRACELET,
+        INDEX_ITEM_ARM_CURSEDRING,
+        INDEX_ITEM_ARM_STRENGTHRING,
+        INDEX_ITEM_ARM_HARDRING,
+        INDEX_ITEM_ARM_INTELLIGENCERING,
+        INDEX_ITEM_ARM_LUCKRING,
+        INDEX_ITEM_ARM_DOUBLEGRIPS
+    };
+
+    const int rare_items[NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS + NUMBER_HIGH_ITEMS] =
+    {
+        /* Low Tier Items */
+        INDEX_ITEM_USE_POTION,
+        INDEX_ITEM_USE_MEAT,
+        INDEX_ITEM_USE_MINDRESTORE,
+        INDEX_ITEM_USE_HEART,
+        INDEX_ITEM_USE_ANTIDOTE,
+        INDEX_ITEM_USE_CURECURSE,
+
+        INDEX_ITEM_BODY_COTTONCLOTHES,
+        INDEX_ITEM_BODY_PRISONGARB,
+        INDEX_ITEM_BODY_COTTONROBE,
+        INDEX_ITEM_BODY_LEATHERARMOR,
+        INDEX_ITEM_BODY_BRONZEARMOR,
+        INDEX_ITEM_BODY_GOLDARMOR,
+
+        INDEX_ITEM_ARM_TOYRING,
+        INDEX_ITEM_ARM_BEARRING,
+        INDEX_ITEM_ARM_WRISTBAND,
+        INDEX_ITEM_ARM_ARMGUARD,
+        INDEX_ITEM_ARM_MAGICGAUNTLET,
+        INDEX_ITEM_ARM_MIRACLEARMBAND,
+        INDEX_ITEM_ARM_GAUNTLET,
+
+        /* Mid Tier Items */
+        INDEX_ITEM_USE_SPICEDMEAT,
+        INDEX_ITEM_USE_MINDHIGH,
+        INDEX_ITEM_USE_HEARTHIGH,
+
+        INDEX_ITEM_BODY_STYLISHSUIT,
+        INDEX_ITEM_BODY_NIGHTSUIT,
+        INDEX_ITEM_BODY_SILKROBE,
+        INDEX_ITEM_BODY_RAINBOWROBE,
+        INDEX_ITEM_BODY_CHAINMAIL,
+        INDEX_ITEM_BODY_STEELARMOR,
+        INDEX_ITEM_BODY_PLATINUMARMOR,
+
+        INDEX_ITEM_ARM_STARBRACELET,
+        INDEX_ITEM_ARM_CURSEDRING,
+        INDEX_ITEM_ARM_STRENGTHRING,
+        INDEX_ITEM_ARM_HARDRING,
+        INDEX_ITEM_ARM_INTELLIGENCERING,
+        INDEX_ITEM_ARM_LUCKRING,
+        INDEX_ITEM_ARM_DOUBLEGRIPS,
+
+        /* High Tier Items */
+        INDEX_ITEM_USE_POTIONHIGH,
+        INDEX_ITEM_USE_POTIONEX,
+        INDEX_ITEM_USE_MINDEX,
+        INDEX_ITEM_USE_HEARTEX,
+        INDEX_ITEM_USE_HEARTMEGA,
+
         INDEX_ITEM_BODY_NINJAGARB,
         INDEX_ITEM_BODY_SOLDIERFATIGUES,
+        INDEX_ITEM_BODY_MAGICROBE,
+        INDEX_ITEM_BODY_SAGEROBE,
+        INDEX_ITEM_BODY_DIAMONDARMOR,
+        INDEX_ITEM_BODY_MIRRORARMOR,
+        INDEX_ITEM_BODY_NEEDLEARMOR,
+        INDEX_ITEM_BODY_DARKARMOR,
 
         INDEX_ITEM_ARM_STRENGTHARMBAND,
         INDEX_ITEM_ARM_DEFENSEARMBAND,
         INDEX_ITEM_ARM_SAGEARMBAND,
-        INDEX_ITEM_ARM_GAMBLERARMBAND,
-
-        // Consumables
-        INDEX_ITEM_USE_POTIONHIGH,
-        INDEX_ITEM_USE_POTIONEX,
-
-        INDEX_ITEM_USE_MINDHIGH,
-        INDEX_ITEM_USE_MINDEX,
-
-        INDEX_ITEM_USE_HEARTEX,
-        INDEX_ITEM_USE_HEARTMEGA,
+        INDEX_ITEM_ARM_GAMBLERARMBAND
     };
     
     int i;
 
-    // ADDED IN 1.3: Set boss and candle items first to prevent boss drop duplicates
-    // Note: If item hard mode is enabled, make these items exclusive to these enemies by adding an arbitrary integer larger than could be reached
-    // normally (e.g. the total number of enemies)
-    // Bosses
-    regular_drops[INDEX_ENEMY_CERBERUS] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    regular_drops[INDEX_ENEMY_NECROMANCER] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    regular_drops[INDEX_ENEMY_IRONGOLEM] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    regular_drops[INDEX_ENEMY_ADRAMELECH] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    regular_drops[INDEX_ENEMY_ZOMBIEDRAGON] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    regular_drops[INDEX_ENEMY_DEATH] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    regular_drops[INDEX_ENEMY_CAMILLA] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    regular_drops[INDEX_ENEMY_HUGH] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    regular_drops[INDEX_ENEMY_DRACULAI] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
+    /* ADDED IN 1.3: Set boss and candle items first to prevent boss drop duplicates. */
 
-    // Candles
-    regular_drops[INDEX_ENEMY_SCARYCANDLE] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    rare_drops[INDEX_ENEMY_SCARYCANDLE] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    regular_drops[INDEX_ENEMY_TRICKCANDLE] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    rare_drops[INDEX_ENEMY_TRICKCANDLE] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    regular_drops[INDEX_ENEMY_MIMICCANDLE] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
-    rare_drops[INDEX_ENEMY_MIMICCANDLE] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS, true, options->RandomItemHardMode);
+    /* I had to make this logic worse unfortunately, given I have 
+    different item placement arrays for normal and TIM logic. - Malaert64 */
 
+    if (options->tieredItemsMode) {
+        /* Note: If item hard mode is enabled, make boss drops exclusive. */
+        regular_drops[INDEX_ENEMY_CERBERUS] = selectDrop(high_items, placed_high_items, NUMBER_HIGH_ITEMS, true);
+        regular_drops[INDEX_ENEMY_NECROMANCER] = selectDrop(high_items, placed_high_items, NUMBER_HIGH_ITEMS, true);
+        regular_drops[INDEX_ENEMY_IRONGOLEM] = selectDrop(high_items, placed_high_items, NUMBER_HIGH_ITEMS, true);
+        regular_drops[INDEX_ENEMY_ADRAMELECH] = selectDrop(high_items, placed_high_items, NUMBER_HIGH_ITEMS, true);
+        regular_drops[INDEX_ENEMY_ZOMBIEDRAGON] = selectDrop(high_items, placed_high_items, NUMBER_HIGH_ITEMS, true);
+        regular_drops[INDEX_ENEMY_DEATH] = selectDrop(high_items, placed_high_items, NUMBER_HIGH_ITEMS, true);
+        regular_drops[INDEX_ENEMY_CAMILLA] = selectDrop(high_items, placed_high_items, NUMBER_HIGH_ITEMS, true);
+        regular_drops[INDEX_ENEMY_HUGH] = selectDrop(high_items, placed_high_items, NUMBER_HIGH_ITEMS, true);
+        regular_drops[INDEX_ENEMY_DRACULAI] = selectDrop(high_items, placed_high_items, NUMBER_HIGH_ITEMS, true);
+    } else {
+        regular_drops[INDEX_ENEMY_CERBERUS] = selectDrop(&rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], &placed_rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], NUMBER_HIGH_ITEMS, false);
+        regular_drops[INDEX_ENEMY_NECROMANCER] = selectDrop(&rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], &placed_rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], NUMBER_HIGH_ITEMS, false);
+        regular_drops[INDEX_ENEMY_IRONGOLEM] = selectDrop(&rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], &placed_rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], NUMBER_HIGH_ITEMS, false);
+        regular_drops[INDEX_ENEMY_ADRAMELECH] = selectDrop(&rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], &placed_rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], NUMBER_HIGH_ITEMS, false);
+        regular_drops[INDEX_ENEMY_ZOMBIEDRAGON] = selectDrop(&rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], &placed_rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], NUMBER_HIGH_ITEMS, false);
+        regular_drops[INDEX_ENEMY_DEATH] = selectDrop(&rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], &placed_rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], NUMBER_HIGH_ITEMS, false);
+        regular_drops[INDEX_ENEMY_CAMILLA] = selectDrop(&rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], &placed_rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], NUMBER_HIGH_ITEMS, false);
+        regular_drops[INDEX_ENEMY_HUGH] = selectDrop(&rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], &placed_rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], NUMBER_HIGH_ITEMS, false);
+        regular_drops[INDEX_ENEMY_DRACULAI] = selectDrop(&rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], &placed_rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], NUMBER_HIGH_ITEMS, false);
+    }
+
+    /* Setting drop logic for all enemies. */
     for (i = 0; i < NUMBER_ENEMIES; i++)
     {
-        // Give Dracula II shinning armor occasionally as a joke
-        if (i == INDEX_ENEMY_DRACULAII)
-        {
+        /* Give Dracula II Shinning Armor occasionally as a joke. */
+        if (i == INDEX_ENEMY_DRACULAII) {
             regular_drops[i] = rare_drops[i] = INDEX_ITEM_BODY_SHINNINGARMOR;
             regular_drop_chance[i] = rare_drop_chance[i] = 5000;
-        }   
-        // Set bosses' secondary item to none since we already set the primary item earlier
-        else if (i == INDEX_ENEMY_CERBERUS || i == INDEX_ENEMY_NECROMANCER || i == INDEX_ENEMY_IRONGOLEM || i == INDEX_ENEMY_ADRAMELECH || i == INDEX_ENEMY_ZOMBIEDRAGON || i == INDEX_ENEMY_DEATH || i == INDEX_ENEMY_CAMILLA || i == INDEX_ENEMY_HUGH || i == INDEX_ENEMY_DRACULAI)
-        {
-            // REMOVED IN 1.3: Select a random exclusive rare for every boss enemy for common but not rare since we always drop the common
-            // regular_drops[i] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS);
-            //rare_drops[i] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS);
-            // Set rare drop to none
+        }  
+
+        /* Set bosses' secondary item to none since 
+        we already set the primary item earlier. */
+        else if (i == INDEX_ENEMY_CERBERUS || i == INDEX_ENEMY_NECROMANCER || 
+                 i == INDEX_ENEMY_IRONGOLEM || i == INDEX_ENEMY_ADRAMELECH || 
+                 i == INDEX_ENEMY_ZOMBIEDRAGON || i == INDEX_ENEMY_DEATH || 
+                 i == INDEX_ENEMY_CAMILLA || i == INDEX_ENEMY_HUGH || 
+                 i == INDEX_ENEMY_DRACULAI) {
+
+            /* Set rare drop to none. */
             rare_drops[i] = 0;
 
-            // Max out rare boss drops (normally, drops are hard capped to 50% and 25% respectively regardless of drop rate, but
-            // fusecavator's patch AllowAlwaysDrop.ips allows setting the regular item drop chance to 10000 to force a drop always)
+            /* Max out rare boss drops (normally, drops are capped to 
+            50% and 25% for common and rare respectively, but Fuse's 
+            patch AllowAlwaysDrop.ips allows setting the regular item 
+            drop chance to 10000 to force a drop always). */
             regular_drop_chance[i] = 10000;
             rare_drop_chance[i] = 0;
-
-            // REMOVED IN 1.3: We increment the placed item counters since bosses are now guaranteed to drop an item
-            // placed_rare_items[getPlacedIndexFromID(regular_drops[i], &rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS)]++;
         }
-        // Trivially easy enemies that can be easily farmed AND we are NOT using the hard mode option
-        // OR
-        // We ARE using the hard mode option and the enemy is below 150 HP
-        else if 
-        (
-            (!options->RandomItemHardMode && 
-                (i == INDEX_ENEMY_MEDUSAHEAD || i == INDEX_ENEMY_ZOMBIE || i == INDEX_ENEMY_GHOUL || i == INDEX_ENEMY_WIGHT || i == INDEX_ENEMY_SKELETONBOMBER || i == INDEX_ENEMY_FLEAMAN || i == INDEX_ENEMY_BAT || i == INDEX_ENEMY_SPIRIT || i == INDEX_ENEMY_ECTOPLASM || i == INDEX_ENEMY_SPECTER 
-                || i == INDEX_ENEMY_DEVILTOWER || i == INDEX_ENEMY_GARGOYLE || i == INDEX_ENEMY_POISONWORM || i == INDEX_ENEMY_MYCONID || i == INDEX_ENEMY_MERMAN || i == INDEX_ENEMY_GREMLIN || i == INDEX_ENEMY_HOPPER || i == INDEX_ENEMY_EVILHAND || i == INDEX_ENEMY_MUMMY))
-            || (options->RandomItemHardMode &&
-            (   i == INDEX_ENEMY_MEDUSAHEAD ||
-                i == INDEX_ENEMY_ZOMBIE ||
-                i == INDEX_ENEMY_GHOUL ||
-                i == INDEX_ENEMY_WIGHT ||
-                i == INDEX_ENEMY_CLINKINGMAN ||
-                i == INDEX_ENEMY_ZOMBIETHIEF ||
-                i == INDEX_ENEMY_SKELETON ||
-                i == INDEX_ENEMY_SKELETONBOMBER ||
-                i == INDEX_ENEMY_ELECTRICSKELETON ||
-                i == INDEX_ENEMY_SKELETONSPEAR ||
-                i == INDEX_ENEMY_SKELETONBOOMERANG ||
-                i == INDEX_ENEMY_SKELETONSOLDIER ||
-                i == INDEX_ENEMY_SKELETONKNIGHT ||
-                i == INDEX_ENEMY_BONETOWER ||
-                i == INDEX_ENEMY_FLEAMAN ||
-                i == INDEX_ENEMY_POLTERGEIST ||
-                i == INDEX_ENEMY_BAT ||
-                i == INDEX_ENEMY_SPIRIT ||
-                i == INDEX_ENEMY_ECTOPLASM ||
-                i == INDEX_ENEMY_SPECTER ||
-                i == INDEX_ENEMY_AXEARMOR ||
-                i == INDEX_ENEMY_EARTHARMOR ||
-                i == INDEX_ENEMY_STONEARMOR ||
-                i == INDEX_ENEMY_BLOODYSWORD ||
-                i == INDEX_ENEMY_DEVILTOWER ||
-                i == INDEX_ENEMY_SKELETONATHLETE ||
-                i == INDEX_ENEMY_HARPY ||
-                i == INDEX_ENEMY_IMP ||
-                i == INDEX_ENEMY_MUDMAN ||
-                i == INDEX_ENEMY_GARGOYLE ||
-                i == INDEX_ENEMY_SLIME ||
-                i == INDEX_ENEMY_FROZENSHADE ||
-                i == INDEX_ENEMY_HEATSHADE ||
-                i == INDEX_ENEMY_POISONWORM ||
-                i == INDEX_ENEMY_MYCONID ||
-                i == INDEX_ENEMY_WILLOWISP ||
-                i == INDEX_ENEMY_SPEARFISH ||
-                i == INDEX_ENEMY_MERMAN ||
-                i == INDEX_ENEMY_MARIONETTE ||
-                i == INDEX_ENEMY_GREMLIN ||
-                i == INDEX_ENEMY_HOPPER ||
-                i == INDEX_ENEMY_EVILPILLAR ||
-                i == INDEX_ENEMY_BONEHEAD ||
-                i == INDEX_ENEMY_FOXARCHER ||
-                i == INDEX_ENEMY_FOXHUNTER ||
-                i == INDEX_ENEMY_HYENA ||
-                i == INDEX_ENEMY_FISHHEAD ||
-                i == INDEX_ENEMY_DRYAD ||
-                i == INDEX_ENEMY_BRAINFLOAT ||
-                i == INDEX_ENEMY_EVILHAND ||
-                i == INDEX_ENEMY_ABIONDARG ||
-                i == INDEX_ENEMY_WITCH ||
-                i == INDEX_ENEMY_MUMMY ||
-                i == INDEX_ENEMY_KINGMOTH ||
-                i == INDEX_ENEMY_KILLERBEE ||
-                i == INDEX_ENEMY_LIZARDMAN ||
-                i == INDEX_ENEMY_BATTLEARENADEVILTOWER ||
-                i == INDEX_ENEMY_BATTLEARENABONETOWER ||
-                i == INDEX_ENEMY_BATTLEARENABLOODYSWORD ||
-                i == INDEX_ENEMY_BATTLEARENAEVILPILLAR)))
-        {
-            regular_drops[i] = selectDrop(easy_items, placed_easy_items, NUMBER_RARE_ITEMS, false, options->RandomItemHardMode);
-            //placed_easy_items[getPlacedIndexFromID(regular_drops[i], easy_items, placed_easy_items, NUMBER_RARE_ITEMS)]++;
-            rare_drops[i] = selectDrop(easy_items, placed_easy_items, NUMBER_RARE_ITEMS, false, options->RandomItemHardMode);
-            //placed_easy_items[getPlacedIndexFromID(rare_drops[i], easy_items, placed_easy_items, NUMBER_RARE_ITEMS)]++;
-            
-            // Level 1 rate between 5-10% and rare between 3-8%
-            regular_drop_chance[i] =  500 + (rand() % 501);
-            rare_drop_chance[i] = 300 + (rand() % 501);
-        }
-        // It is a "Candle" enemy
-        else if (i == INDEX_ENEMY_SCARYCANDLE || i == INDEX_ENEMY_TRICKCANDLE || i == INDEX_ENEMY_MIMICCANDLE)
-        {
-            // REMOVED IN 1.3: Select a random exclusive rare for every candle enemy for both common and rare drops
-            // regular_drops[i] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS);
-            // rare_drops[i] = selectDrop(&rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS);
 
-            // Set a regular drop chance between 20-30% and a rare drop chance between 15-20%
+        /* Candle enemies are special cases, and I've restructured their 
+        logic to fit with the new system of placement arrays. -Malaert64 */
+        else if (i == INDEX_ENEMY_SCARYCANDLE || i == INDEX_ENEMY_TRICKCANDLE || i == INDEX_ENEMY_MIMICCANDLE) {
+            if (options->tieredItemsMode){
+                regular_drops[i] = selectDrop(high_items, placed_high_items, NUMBER_HIGH_ITEMS, false);
+                rare_drops[i] = selectDrop(high_items, placed_high_items, NUMBER_HIGH_ITEMS, false);
+            } else {
+                regular_drops[i] = selectDrop(&rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], &placed_rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], NUMBER_HIGH_ITEMS, false);
+                rare_drops[i] = selectDrop(&rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], &placed_rare_items[(NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS)], NUMBER_HIGH_ITEMS, false);
+            }
+
+            /* Set base drop chances at 20-30% for common and 15-20% for rare. */
             regular_drop_chance[i] = 2000 + (rand() % 1001);
             rare_drop_chance[i] = 1500 + (rand() % 501);
-            
-            // REMOVED IN 1.3: Increment our counter for how many have been placed
-            // placed_rare_items[getPlacedIndexFromID(regular_drops[i], &rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS)]++;
-            // placed_rare_items[getPlacedIndexFromID(rare_drops[i], &rare_items[NUMBER_COMMON_ITEMS], &placed_rare_items[NUMBER_COMMON_ITEMS], NUMBER_RARE_ITEMS)]++;
         }
-        // Regular enemies
-        else
+
+        /* Low-tier items drop from enemies that are trivial to farm (60 HP 
+        or less) on normal drop logic, or enemies under 144 HP on TIM logic. */
+        
+        /* Logic revised by Malaert64 to remove 
+        massive if block checking enemy IDs. */
+        else if ((!options->tieredItemsMode && enemies_data_table[i].hp <= 60) || (options->tieredItemsMode && enemies_data_table[i].hp <= 143))
         {
-            // Select a random regular and rare drop for every enemy from their respective lists
-            regular_drops[i] = selectDrop(common_items, placed_common_items, NUMBER_COMMON_ITEMS, false, options->RandomItemHardMode);
-            rare_drops[i] = selectDrop(rare_items, placed_rare_items, NUMBER_RARE_ITEMS, false, options->RandomItemHardMode);
+            /* Low-tier enemy drops. */
+            regular_drops[i] = selectDrop(low_items, placed_low_items, NUMBER_LOW_ITEMS, false);
+            rare_drops[i] = selectDrop(low_items, placed_low_items, NUMBER_LOW_ITEMS, false);
+            
+            /* Set base drop chances at 6-10% for common and 3-6% for rare. */
+            regular_drop_chance[i] =  600 + (rand() % 401);
+            rare_drop_chance[i] = 300 + (rand() % 301);
+        }
 
-            // Otherwise, set a regular drop chance between 5-10% and a rare drop chance between 3-5%
-            regular_drop_chance[i] = 500 + (rand() % 501);
-            rare_drop_chance[i] = 300 + (rand() % 201);
+        /* Rest of TIM Logic, by Malaert64. */
+        else if (options->tieredItemsMode) {
+            /* If under 370 HP, mid-tier enemy. */
+            if (enemies_data_table[i].hp <= 369) {
+                regular_drops[i] = selectDrop(low_items, placed_low_items, NUMBER_LOW_ITEMS, false);
+                rare_drops[i] = selectDrop(mid_items, placed_mid_items, NUMBER_MID_ITEMS, false);
+            /* Otherwise, enemy HP is 370+, thus high-tier enemy. */
+            } else {
+                regular_drops[i] = selectDrop(mid_items, placed_mid_items, NUMBER_MID_ITEMS, false);
+                rare_drops[i] = selectDrop(high_items, placed_high_items, NUMBER_HIGH_ITEMS, false);
+            }
+            
+            /* Set base drop chances at 6-10% for common and 3-6% for rare. */
+            regular_drop_chance[i] =  600 + (rand() % 401);
+            rare_drop_chance[i] = 300 + (rand() % 301);
+        }
 
+        /* Regular enemies outside of TIM. */
+        else {
+            /* Select a random regular and rare drop for 
+            every enemy from their respective lists */
+            regular_drops[i] = selectDrop(common_items, placed_common_items, (NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS), false);
+            rare_drops[i] = selectDrop(rare_items, placed_rare_items, (NUMBER_LOW_ITEMS + NUMBER_MID_ITEMS + NUMBER_HIGH_ITEMS), false);
+
+            /* Set base drop chances at 6-10% for common and 3-6% for rare. */
+            regular_drop_chance[i] = 600 + (rand() % 401);
+            rare_drop_chance[i] = 300 + (rand() % 301);
         }
     }
 }
 
-static int selectDrop(const int dropList[], int dropsPlaced[], int number_drops, bool exclusiveDrop, bool randomItemHardmode)
-{
+static int selectDrop(const int dropList[], int dropsPlaced[], int number_drops, bool exclusiveDrop) {
     int lowest_number;
     int number_valid_drops = 0;
     int i;
@@ -1157,37 +1354,43 @@ static int selectDrop(const int dropList[], int dropsPlaced[], int number_drops,
     int eligible_items[NUMBER_ITEMS];
 
     lowest_number = dropsPlaced[0];
-    // Only make eligible drops which we have placed the least
+    /* Only make eligible drops which we have placed the least. */
     for (i = 0; i < number_drops; i++)
     {
-        // A drop with the priority we are expecting is available to add as a candidate
+        /* A drop with the priority we are expecting 
+        is available to add as a candidate. */
         if (dropsPlaced[i] == lowest_number)
         {
             eligible_items[number_valid_drops] = i;
             number_valid_drops++;
         }
 
-        // If this criteria is met, there is at least one item that hasn't been placed as many times as the others.
-        // We have to lower the lowest number and start from the beginning of the loop to capture all the valid indices.
+        /* If this criteria is met, there is at least one item 
+        that hasn't been placed as many times as the others.
+        We have to lower the lowest number and start from the
+        beginning of the loop to capture all the valid indices. */
         else if (dropsPlaced[i] < lowest_number)
         {
             lowest_number = dropsPlaced[i];
             number_valid_drops = i = 0;
         }
     }
-    // Postcondition: Our array eligible_items has number_valid_drops many valid item indices as its elements
+    /* Postcondition: Our array eligible_items has number_valid_drops 
+    many valid item indices as its elements. */
 
-    // Select a random valid item from the index of valid choices
+    /* Select a random valid item from the index of valid choices. */
     random_result = rand() % number_valid_drops;
 
-    // Increment the number of this item placed, unless it should be exclusive to the boss/candle, in which case
-    // set it to an arbitrarily large number to make it exclusive (use NUMBER_ENEMIES for simplicity)
-    if (randomItemHardmode && exclusiveDrop)
-        dropsPlaced[eligible_items[random_result]] += NUMBER_ENEMIES;
-    else
+    /* Increment the number of this item placed, unless it should 
+    be exclusive to the boss/candle, in which case set it to an 
+    arbitrarily large number to make it exclusive. */
+    if (exclusiveDrop) {
+        dropsPlaced[eligible_items[random_result]] += 999;
+    } else {
         dropsPlaced[eligible_items[random_result]]++;
-    
-    // Return the item ID
+    }
+
+    /* Return the item ID. */
     return dropList[eligible_items[random_result]];
 }
 

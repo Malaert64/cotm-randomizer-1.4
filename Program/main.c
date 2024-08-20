@@ -48,6 +48,7 @@ int main (int argc, char *argv[])
         false,
         false,
         false,
+        false,
         false
     };
 
@@ -64,7 +65,7 @@ int main (int argc, char *argv[])
     }
 
     // Print a little credits line
-    printf("Castlevania: Circle of the Moon Randomizer\nReverse engineering and game program: DevAnj\nOptional patches: fusecavator\nRandomizer logic and patch program: spooky\nEmotional support: Circle of the Moon Speedrunning Discord @ https://discord.gg/Ae7Qjd5xDu\n");
+    printf("Castlevania: Circle of the Moon Randomizer\nReverse engineering and game program: DevAnj\nOptional patches: fusecavator\nRandomizer logic and patch program: spooky\nReworked item logic and additional features: Malaert64\nEmotional support: Circle of the Moon Speedrunning Discord @ https://discord.gg/Ae7Qjd5xDu\n");
     if (!headless){
         getchar();
     }
@@ -134,8 +135,8 @@ int main (int argc, char *argv[])
         options.applyShooterStrength = boolstorage;
         fscanf(optionsfile, "doNotRandomizeItems %d #boolean\n", &boolstorage);
         options.doNotRandomizeItems = boolstorage;
-        fscanf(optionsfile, "RandomItemHardMode %d #boolean\n", &boolstorage);
-        options.RandomItemHardMode = boolstorage;
+        fscanf(optionsfile, "tieredItemsMode %d #boolean\n", &boolstorage);
+        options.tieredItemsMode = boolstorage;
         fscanf(optionsfile, "halveDSSCards %d #boolean\n", &boolstorage);
         options.halveDSSCards = boolstorage;
         fscanf(optionsfile, "countdown %d #boolean\n", &boolstorage);
@@ -146,6 +147,8 @@ int main (int argc, char *argv[])
         options.noMPDrain = boolstorage;
         fscanf(optionsfile, "allBossesRequired %d #boolean\n", &boolstorage);
         options.allBossesRequired = boolstorage;
+        fscanf(optionsfile, "allBossesAndBattleArenaRequired %d #boolean\n", &boolstorage);
+        options.allBossesAndBattleArenaRequired = boolstorage;
         fscanf(optionsfile, "dssRunSpeed %d #boolean\n", &boolstorage);
         options.dssRunSpeed = boolstorage;
         fscanf(optionsfile, "skipCutscenes %d #boolean\n", &boolstorage);

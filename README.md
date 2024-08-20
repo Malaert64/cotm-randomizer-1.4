@@ -1,8 +1,9 @@
-# Castlevania: Circle of the Moon Randomizer 1.3
+# Castlevania: Circle of the Moon Randomizer 1.4
 
 Reverse engineering and game program: DevAnj
 Optional patches: fusecavator
 Randomizer logic and patch program: spooky
+Reworked item logic and additional features: Malaert64
 Emotional support: Circle of the Moon Speedrunning Discord @ https://discord.gg/Ae7Qjd5xDu
 
 Try the randomizer online: https://rando.circleofthemoon.com/ 
@@ -10,7 +11,7 @@ Note: Seeds are not shared between the website and the application releases.
 
 # Easy visual guide:
 
-Malaert64 and AmadeusJ have prepared a great PDF guide for the randomizer. Read it here: https://drive.google.com/file/d/1buC4JGgKBtFQksIw9FNqfhK3bKQO3RS8/view?usp=sharing
+Malaert64 has prepared a great guide for the randomizer. Read it here: https://docs.google.com/document/d/1uot4BD9XW7A--A8ecgoY8mLK_vSoQRpY5XCkzgas87c/view?usp=sharing
 
 It is a very useful resource for beginners to the game, and importantly, it contains a map that shows the area
 boundaries used by the countdown meter (they are not always intuitive: for example, the outdoor hallway with Obervation
@@ -100,7 +101,7 @@ Steam guide article: https://steamcommunity.com/sharedfiles/filedetails/?id=2612
 5. "Required Last Keys": Set number of Last Keys required to open the door to the Ceremonial Room.
 6. "Available Last Keys": Set number of Last Keys to be placed on pedestals.
 7. "Do Not Randomize Items": Disable item randomization. Enemies will drop their default items.
-8. "Random Item Hardmode": Random item hard mode. Enemies below 150 HP will drop poor items. Any rare items assigned to bosses or candles are exclusive to them.
+8. "Tiered Item Drops": Item drops are split into three tiers based on enemy HP: low-tier items are dropped by enemies under 144 HP, low and mid-tier items are dropped 144 - 369 HP, and mid and high-tier items are dropped by enemies with 370+ HP. Any rare items assigned to bosses are exclusive to them.
 9. Optional balance changes:
    a. "Buff Ranged Familiars": Doubles the damage dealt by projectiles fired by familiars.
    b. "Buff SubWeapons": Increase regular and Shooter mode damage for some subweapons and corresponding item crush attacks (see BuffSubweapons.ips below for exact changes).
@@ -111,10 +112,11 @@ Steam guide article: https://steamcommunity.com/sharedfiles/filedetails/?id=2612
 13. "Subweapon Shuffle": Randomize which subweapon is in which subweapon location. The numbers of subweapons present in the original game are preserved. Subweapons are only placed in locations that already had a subweapon.
 14. "No MP Drain":  Disable the Battle Arena's MP drain effect. You will be able to use DSS in the Battle Arena without MP restoring items.
 15. "All Bosses Required": A Last Key will be placed behind every boss except Dracula. All eight Last Keys will be required. The other Last Key settings will be ignored.
-16. "DSS Run Speed": The Pluto and Griffin DSS card speed increase will apply even when jumping.
-17. "Skip Cutscenes": Cutscenes will proceed without dialogue.
-18. "Skip Magic Item Tutorials": Magic Items will no longer provide guidance on item use when obtained.
-19. "Nerf Roc Wing": Roc Wing will be less effective while Double or Kick Boots have not yet been obtained. Read the guide below for details.
+16. "All Bosses and Battle Arena Required": Same as previous, except a ninth key will also be placed at the end of the Battle Arena. The other Last Key settings (and normal All Bosses logic) will be ignored.
+17. "DSS Run Speed": The Pluto and Griffin DSS card speed increase will apply even when jumping.
+18. "Skip Cutscenes": Cutscenes will proceed without dialogue.
+19. "Skip Magic Item Tutorials": Magic Items will no longer provide guidance on item use when obtained.
+20. "Nerf Roc Wing": Roc Wing will be less effective while Double or Kick Boots have not yet been obtained. Read the guide below for details.
 
 # "Nerf Roc Wing" guide:
 
@@ -353,6 +355,11 @@ NerfRocWing.ips
 Optional patch created by Liquid Cat. Changes the behavior of the Roc Wing depending on which other Magic Items have been obtained.
 
 # Changes:
+
+1.4:
+  - Item drop tables and distribution logic completely reworked by Malaert64.
+  - Random Item Hardmode has been redesigned as Tiered Items Mode, also by Malaert64.
+  - Added "All Bosses and Battle Arena Required" toggle, put together by Malaert64.
 
 1.3:
   - Added a patch by Fusecavator to fix the garbled Magic Item issue.

@@ -29,7 +29,7 @@ const char* cotmr_option_list() {
            "opt,8,bool,buffSubweapon,Buff SubWeapons,0\n"
            "opt,9,bool,buffShooter,Buff Shooter Strength,0\n"
            "opt,10,bool,doNotRandomizeItems,Do Not Randomize Items,0\n"
-           "opt,11,bool,randomItemHardMode,Random Item Hardmode,0\n"
+           "opt,11,bool,tieredItemsMode,Tiered Items Mode,0\n"
            "opt,12,bool,halveDSSCards,Halve DSS Cards Placed,0\n"
            "opt,13,bool,countdown,Countdown,0\n"
            "opt,14,bool,subShuffle,Subweapon Shuffle,0\n"
@@ -77,7 +77,7 @@ static void set_option_val(struct seed_options *options, int opt, int val) {
             options->doNotRandomizeItems = val;
             break;
         case 11:
-            options->RandomItemHardMode = val;
+            options->tieredItemsMode = val;
             break;
         case 12:
             options->halveDSSCards = val;
@@ -95,15 +95,18 @@ static void set_option_val(struct seed_options *options, int opt, int val) {
             options->allBossesRequired = val;
             break;
         case 17:
-            options->dssRunSpeed = val;
+            options->allBossesAndBattleArenaRequired = val;
             break;
         case 18:
-            options->skipCutscenes = val;
+            options->dssRunSpeed = val;
             break;
         case 19:
-            options->skipMagicItemTutorials = val;
+            options->skipCutscenes = val;
             break;
         case 20:
+            options->skipMagicItemTutorials = val;
+            break;
+        case 21:
             options->nerfRocWing = val;
             break;
     }
