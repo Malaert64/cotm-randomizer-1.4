@@ -6,9 +6,16 @@
 #define CONSTANT_DSS_VALUE 200 // To differentiate DSS card indices from other items, offset them by this value (must just be greater than any item index)
 
 // Purely arbitrary choices as to which items are "common" or "rare", only defined to avoid magic number use
+/*
 #define NUMBER_EASY_ITEMS 9
 #define NUMBER_COMMON_ITEMS 33
 #define NUMBER_RARE_ITEMS 20
+*/
+
+// Defining constants for the number of "low", "mid", and "high" tier items.
+#define NUMBER_LOW_ITEMS 19
+#define NUMBER_MID_ITEMS 17
+#define NUMBER_HIGH_ITEMS 17
 
 #include <stdbool.h>
 #include <stdio.h>

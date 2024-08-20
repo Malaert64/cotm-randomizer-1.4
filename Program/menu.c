@@ -55,9 +55,9 @@ void optionMenu(struct seed_options *options)
         {
             options->doNotRandomizeItems = !options->doNotRandomizeItems;
         }
-        else if (selection == MENU_ITEMRANDOHARDMODE)
+        else if (selection == MENU_TIEREDITEMSMODE)
         {
-            options->RandomItemHardMode = !options->RandomItemHardMode;
+            options->tieredItemsMode = !options->tieredItemsMode;
         }
         else if (selection == MENU_BALANCECHANGES)
         {
@@ -86,6 +86,10 @@ void optionMenu(struct seed_options *options)
         else if (selection == MENU_ALLBOSSES)
         {
             options->allBossesRequired = !options->allBossesRequired;
+        }
+        else if (selection == MENU_ALLBOSSESANDBATTLEARENA)
+        {
+            options->allBossesAndBattleArenaRequired = !options->allBossesAndBattleArenaRequired;
         }
         else if (selection == MENU_DSSRUNSPEED)
         {
@@ -151,7 +155,7 @@ static void displayMenu(struct seed_options *options)
     printf("[%d] 5. Set number of Last Keys required to open the door to the Ceremonial Room.\n", options->lastKeyRequired);
     printf("[%d] 6. Set number of Last Keys to be placed on pedestals.\n", options->lastKeyAvailable);
     printf("[%s] 7. Disable item randomization. Enemies will drop their default items.\n", options->doNotRandomizeItems ? checked : unchecked);
-    printf("[%s] 8. Random item hard mode. Enemies below 150 HP will drop poor items. Any rare items assigned to bosses or candles are exclusive to them.\n", options->RandomItemHardMode ? checked : unchecked);
+    printf("[%s] 8. Split item drops into three tiers, assigned to enemies based on HP ranges. Any rare items assigned to bosses are exclusive to them.\n", options->tieredItemsMode ? checked : unchecked);
     printf("[%s] 9. Select optional balance changes. Starred when any optional balance change is enabled.\n", (options->applyBuffFamiliars || options->applyBuffSubweapons || options->applyShooterStrength) ? checked : unchecked);
     printf("[%s] 10. Allow activating Pluto + Griffin (increased speed) even when the cards are not obtained.\n", options->applyAllowSpeedDash ? checked : unchecked);
     printf("[%s] 11. Halve the number of placed DSS cards. You will not be able to obtain all DSS cards. Cards could randomly be skewed to action or attribute.\n", options->halveDSSCards ? checked : unchecked);
@@ -159,10 +163,11 @@ static void displayMenu(struct seed_options *options)
     printf("[%s] 13. Randomize which subweapon is in which subweapon location. The numbers of subweapons present in the original game are preserved. Subweapons are only placed in locations that already had a subweapon.\n", options->subweaponShuffle ? checked : unchecked);
     printf("[%s] 14. Disable the Battle Arena's MP drain effect. You will be able to use DSS in the Battle Arena without MP restoring items.\n", options->noMPDrain ? checked : unchecked);
     printf("[%s] 15. All bosses mode. A Last Key will be placed behind every boss except Dracula. All eight will be required. The other Last Key settings will be ignored.\n", options->allBossesRequired ? checked : unchecked);
-    printf("[%s] 16. Patch DSS run speed increase. The Pluto and Griffin DSS card speed increase will apply even when jumping.\n", options->dssRunSpeed ? checked : unchecked);
-    printf("[%s] 17. Skip cutscenes. Cutscenes will proceed without dialogue.\n", options->skipCutscenes ? checked : unchecked);
-    printf("[%s] 18. Skip Magic Item tutorials. Magic Items will no longer provide guidance on item use when obtained.\n", options->skipMagicItemTutorials ? checked : unchecked);
-    printf("[%s] 19. Nerf the Roc Wing. Roc Wing will be less effective while Double or Kick Boots have not yet been obtained. Read the guide for details.\n", options->nerfRocWing ? checked : unchecked);
+    printf("[%s] 16. All bosses + Battle Arena mode. Same as previous, except a ninth key will be placed at the end of Battle Arena. The other Last Key settings will be ignored.\n", options->allBossesAndBattleArenaRequired ? checked : unchecked);
+    printf("[%s] 17. Patch DSS run speed increase. The Pluto and Griffin DSS card speed increase will apply even when jumping.\n", options->dssRunSpeed ? checked : unchecked);
+    printf("[%s] 18. Skip cutscenes. Cutscenes will proceed without dialogue.\n", options->skipCutscenes ? checked : unchecked);
+    printf("[%s] 19. Skip Magic Item tutorials. Magic Items will no longer provide guidance on item use when obtained.\n", options->skipMagicItemTutorials ? checked : unchecked);
+    printf("[%s] 20. Nerf the Roc Wing. Roc Wing will be less effective while Double or Kick Boots have not yet been obtained. Read the guide for details.\n", options->nerfRocWing ? checked : unchecked);
 
     printf("\n>");
 }

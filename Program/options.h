@@ -15,12 +15,13 @@ struct seed_options {
     bool applyBuffSubweapons;
     bool applyShooterStrength;
     bool doNotRandomizeItems;
-    bool RandomItemHardMode;
+    bool tieredItemsMode;
     bool halveDSSCards;
     bool countdown;
     bool subweaponShuffle;
     bool noMPDrain;
     bool allBossesRequired;
+    bool allBossesAndBattleArenaRequired;
     bool dssRunSpeed;
     bool skipCutscenes;
     bool skipMagicItemTutorials;
