@@ -11,7 +11,7 @@
 
 
 // Enemy drop
-#define NUMBER_ENEMIES 141
+#define NUMBER_ENEMIES 141 /* Technically should be 142, but the last one doesn't matter so we leave it out. */
 #define NUMBER_ITEMS 55
 #define NUMBER_ITEMS_INCLUDING_DSS 75
 #define CONSTANT_ENEMY_DATA_LENGTH 20
@@ -580,5 +580,6 @@
 #define INDEX_ENEMY_NIGHTMARE 138
 #define INDEX_ENEMY_LILIM 139
 #define INDEX_ENEMY_LILITH 140
+#define INDEX_ENEMY_COFFIN 141 /* It exists, but inherits its drops and stats from the Mummy enemy type so we never use it. I think this just exists so the name "Coffin" appears when you attack it. -Malaert64 */
 
 #endif
