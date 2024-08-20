@@ -35,10 +35,11 @@ const char* cotmr_option_list() {
            "opt,14,bool,subShuffle,Subweapon Shuffle,0\n"
            "opt,15,bool,noMPDrain,Disable Battle Arena MP Drain,0\n"
            "opt,16,bool,allBosses,Require All Bosses,0\n"
-           "opt,17,bool,dssRunSpeed,DSS Pluto and Griffin Run Speed in Air,0\n"
-           "opt,18,bool,skipCutscenes,Skip Cutscene Dialogue,0\n"
-           "opt,19,bool,skipMagicItemTutorials,Skip Magic Item Tutorials,0\n"
-           "opt,20,bool,nerfRocWing,Nerf Roc Wing,0\n";
+           "opt,17,bool,allBossesAndBattleArena,Require All Bosses and Battle Arena,0\n"
+           "opt,18,bool,dssRunSpeed,DSS Pluto and Griffin Run Speed in Air,0\n"
+           "opt,19,bool,skipCutscenes,Skip Cutscene Dialogue,0\n"
+           "opt,20,bool,skipMagicItemTutorials,Skip Magic Item Tutorials,0\n"
+           "opt,21,bool,nerfRocWing,Nerf Roc Wing,0\n";
 }
 
 static void set_option_val(struct seed_options *options, int opt, int val) {
