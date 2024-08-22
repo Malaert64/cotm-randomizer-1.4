@@ -1,7 +1,7 @@
-# Castlevania: Circle of the Moon Randomizer 1.4
+# Castlevania: Circle of the Moon Randomizer 1.4.1
 
 Reverse engineering and game program: DevAnj
-Optional patches: fusecavator
+Optional and/or quality-of-life patches: Fusecavator and Liquid Cat
 Randomizer logic and patch program: spooky
 Reworked item logic and additional features: Malaert64
 Emotional support: Circle of the Moon Speedrunning Discord @ https://discord.gg/Ae7Qjd5xDu
