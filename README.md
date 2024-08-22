@@ -354,7 +354,14 @@ Patch created by Fusecavator. Makes changes to dropped item graphics to avoid ga
 NerfRocWing.ips
 Optional patch created by Liquid Cat. Changes the behavior of the Roc Wing depending on which other Magic Items have been obtained.
 
+BattleArenaMusic.ips
+Patch created by Liquid Cat. Makes Vampire Killer the background music of the Battle Arena, instead of just pure silence.
+
 # Changes:
+
+1.4.1:
+  - Malaert64 added Liquid Cat's BattleArenaMusic.ips patch.
+  - Malaert64 made another alteration to item logic: Battle Arena Devil will always drop Shinning Armor when All Bosses and Battle Arena Required is enabled, to compensate for Shinning Armor being removed from the end of Battle Arena when that toggle is enabled.
 
 1.4:
   - Malaert64 edited the randomizer drop tables and distribution logic to support the new Tiered Item Drops optional rule which replaces Random Item Hardmode.
